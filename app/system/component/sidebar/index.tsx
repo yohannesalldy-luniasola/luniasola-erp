@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation'
 
 import { useState, useMemo } from 'react'
 
-import { DatabaseZap, Flag, Activity, Info, UserRound, ChevronRight, ChevronsUpDown, Lock, Radio, BadgeDollarSign } from 'lucide-react'
-import { motion, AnimatePresence }                                                                                  from 'motion/react'
-import useSWR                                                                                                       from 'swr'
+import { DatabaseZap, Flag, Activity, Info, UserRound, ChevronRight, ChevronsUpDown, Lock, Radio, BadgeDollarSign, BarChart3, ChartArea } from 'lucide-react'
+import { motion, AnimatePresence }                                                                                                        from 'motion/react'
+import useSWR                                                                                                                             from 'swr'
 
 import { Span, SVG, G, Path }                                                                                                                                                                                                                                                                                         from '@/component/canggu/block'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger }                                                                                                                                                                                                                                                        from '@/component/canggu/collapsible'
@@ -128,6 +128,25 @@ const MENU: readonly DepartmentMenu[] = [
 		department : 'growth',
 		categories : [
 			{
+				label : 'Analytics',
+				id    : 'analytics',
+				items : [
+					{
+						type     : 'collapsible',
+						id       : 'metrics',
+						label    : 'Metrics',
+						icon     : BarChart3,
+						children : [
+							{
+								icon  : ChartArea,
+								path  : '/system/growth/analytics/metrics',
+								label : 'Dashboard',
+							},
+						],
+					},
+				],
+			},
+			{
 				label : 'CRM',
 				id    : 'crm',
 				items : [
@@ -175,6 +194,7 @@ const MENU: readonly DepartmentMenu[] = [
 					},
 				],
 			},
+			
 		],
 	},
 ] as const
