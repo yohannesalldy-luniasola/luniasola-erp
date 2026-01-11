@@ -1,0 +1,223 @@
+---
+alwaysApply: true
+---
+
+# Project Rules
+These rules define the required standards for structure, naming, styling, accessibility, and conventions across this project.
+Cursor must follow these rules strictly when generating or modifying code.
+
+---
+
+# 1. Project Structure
+## 1.1 Component Directories
+- The project contains two primary shared component directories:
+  - `component/canggu/*` — **Do not modify. Do not install dependencies. Do not introduce major changes.**  
+    This directory contains custom components derived from `shadcn/ui`.
+  - `component/utility/*` — Shared utilities.
+
+## 1.2 Application-Level Components
+- Components for app-level and route-level usage must live inside the relevant `app/**/component` directory.
+- Examples:
+  - `app/component/layout/navigation.tsx`
+  - `app/component/page/hero.tsx`
+  - `app/component/page/achievement.tsx`
+  - `app/about/component/page/hero.tsx`
+
+---
+
+# 2. Naming Standards & Code Style
+## 2.1 Absolute Imports
+- Always use absolute imports via configured aliases:  
+  - `@/component/...`
+  - `@/app/...`
+
+## 2.2 File Naming Rules
+### Single-Word File Names (Mandatory)
+- All file names must be **single word only**.
+  - Correct:
+    - `navigation.tsx`
+    - `hero.tsx`
+  - Incorrect:
+    - `navigation-header.tsx`
+    - `user-profile.tsx`
+
+### Folder Creation Policy
+- Folder creation is **strongly discouraged**.
+- Prefer **one larger file** over splitting logic into multiple files.
+- Only create folders IF:
+  - A file becomes too large **and**
+  - The content cannot be logically contained in a single file.
+
+### (Condition) IF a Folder Must Exist
+- Folder names must be **single word**.
+- Files inside must still be **single word**.
+- Allowed:
+  - `navigation/header.tsx`
+  - `navigation/megamenu.tsx`
+- Not allowed:
+  - `navigation-header.tsx`
+  - `navigation/megamenu-large.tsx`
+  - `navigation-menu/mega-menu.tsx`
+
+## 2.3 Global Naming Rules (Apply to Everything Except File Names)
+### Single-Word Naming Rule (Highly Recommended)
+- All names should use **a single word** whenever possible.
+- Applies to:
+  - Variables
+  - Functions
+  - Hooks
+  - Constants
+  - Components
+  - Types & Interfaces
+  - Props
+  - State Setters
+  - Enums
+  - Contexts
+  - Directory Names
+  - Basically everything that has a name in code
+
+**Examples:**
+- `user`
+- `token`
+- `config`
+
+### (Condition) IF Two Words Are Required
+Follow **Word Grouping Rule**:
+- Base word first  
+- Second word describes/extends the base meaning
+
+Correct:
+- `userToken`
+- `deviceInfo`
+- `themeConfig`
+
+Incorrect:
+- `tokenUser`
+- `listCountry`
+- `infoDevice`
+
+### Component Names
+- Must use **PascalCase**
+- Must remain **single-word IF possible**
+  - `Navigation`
+  - `Hero`
+  - `Footer`
+-(Condition) IF needed, use two-word grouping:
+  - `CountryList`
+  - `UserCard`
+
+### Constants
+- Must use **ALL_CAPS**
+- Prefer single-word:
+  - `TOKEN`
+  - `VERSION`
+- (Condition) IF needed:
+  - `DEFAULT_USER`
+  - `MAX_SIZE`
+
+### Hooks
+- Must be camelCase.
+- Must start with `use`.
+- Should be single-word when possible:
+  - `useTheme`
+  - `useCountry`
+  - `useDeviceInfo`
+
+### TypeScript Types & Interfaces
+- Must use **PascalCase**.
+- Prefer **single word**:
+  - `User`
+  - `Country`
+- (Condition) IF needed:
+  - `UserMeta`
+  - `CountryData`
+  - `ConfigSchema`
+
+## 2.4 Semicolon & String Concatenation Rules
+### No Semicolons (Mandatory)
+- Do **not** use semicolons (`;`) anywhere in the codebase.
+- Cursor must generate JavaScript/TypeScript without semicolons.
+- This includes:
+  - Variables  
+  - Imports  
+  - Exports  
+  - Functions  
+  - Interfaces  
+  - Types  
+  - Components  
+  - Objects & Arrays  
+- The entire project must follow a **no-semicolon code style** consistently.
+
+### No Template Literals for String Append
+- Do **not** use template literals (`` `${value}` ``) for basic string concatenation.
+- Do **not** use template literals solely for concatenating variables or strings.
+- Template literals are ONLY (BUT NOT RECOMMENDED) allowed when:
+  - formatting multi-line strings  
+  - creating human-readable or formatted text blocks  
+  - constructing multi-line markup  
+
+### Use Standard String Concatenation Instead
+For simple appends:
+Correct:
+- `"Hello " + name`
+- `prefix + value`
+
+Incorrect:
+- `` `Hello ${name}` ``
+- `` `${prefix}${value}` ``
+
+---
+
+# 3. Component & UI Rules
+## 3.1 Animations
+- Must use **motion/react** for all animations.
+
+## 3.2 Styling
+- Always use **TailwindCSS** for styling.
+- Avoid creating custom classes unless absolutely necessary.
+- The design must follow a:
+  - modern,
+  - clean,
+  - minimalist aesthetic
+  - with smooth, fluid animations ("smooth like butter")
+- **Do not use gradients**.
+
+## 3.3 Semantic Elements
+- All semantic HTML elements must use corresponding wrappers from:  
+  `component/canggu/block.tsx`
+  - Example: use `<Section>` instead of `<section>`.
+
+---
+
+# 4. Accessibility (A11y)
+- Every element must include **mandatory accessibility attributes**.
+- Examples:
+  - `aria-label`, `aria-expanded`, `aria-controls`
+  - Proper semantic roles
+  - Keyboard navigability
+- Components must never reduce accessibility for visual animations or styling reasons.
+
+---
+
+# 5. Responsiveness
+- The UI must function perfectly down to **320px width**.
+- All layouts, animations, and spacing must adapt cleanly across breakpoints.
+
+---
+
+# 6. ESLint Compliance
+- All generated code must pass ESLint.
+- Saving the file may auto-fix some issues.
+- (Condition) IF ESLint does not auto-fix, Cursor must fix the issues manually.
+- No code should be committed with ESLint warnings or errors.
+
+---
+
+# 7. Performance & Clean Code
+- Avoid unnecessary splitting of small components.
+- Prefer keeping related logic in a single file when possible.
+- Avoid over-abstraction.
+- Remove unused imports and unused variables automatically.
+- Ensure animations do not cause layout shift or jank.
+
+---

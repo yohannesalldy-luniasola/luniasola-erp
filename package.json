@@ -1,0 +1,164 @@
+{
+	"name": "@luniasola/solarynth",
+	"version": "1.1.1",
+	"private": true,
+	"dependencies": {
+		"@radix-ui/react-alert-dialog": "latest",
+		"@radix-ui/react-checkbox": "latest",
+		"@radix-ui/react-collapsible": "latest",
+		"@radix-ui/react-dialog": "latest",
+		"@radix-ui/react-dropdown-menu": "latest",
+		"@radix-ui/react-label": "latest",
+		"@radix-ui/react-navigation-menu": "latest",
+		"@radix-ui/react-popover": "latest",
+		"@radix-ui/react-select": "latest",
+		"@radix-ui/react-separator": "latest",
+		"@radix-ui/react-slot": "latest",
+		"@radix-ui/react-tooltip": "latest",
+		"@supabase/ssr": "latest",
+		"@supabase/supabase-js": "latest",
+		"date-fns": "^4",
+		"jspdf": "^3",
+		"jspdf-autotable": "^5",
+		"next": "^16",
+		"next-themes": "^0",
+		"react": "^19",
+		"react-dom": "^19",
+		"sonner": "^2",
+		"swr": "^2",
+		"xlsx": "^0",
+		"zod": "^4"
+	},
+	"devDependencies": {
+		"@semantic-release/changelog": "^6",
+		"@semantic-release/commit-analyzer": "^13",
+		"@semantic-release/git": "^10",
+		"@semantic-release/npm": "^13",
+		"@semantic-release/release-notes-generator": "^14",
+		"@stylistic/eslint-plugin": "^2",
+		"@tailwindcss/postcss": "^4",
+		"@types/node": "^20",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"class-variance-authority": "^0",
+		"clsx": "^2",
+		"conventional-changelog-conventionalcommits": "^9",
+		"eslint": "^9",
+		"eslint-config-next": "^16",
+		"eslint-plugin-align-assignments": "^1",
+		"eslint-plugin-align-import": "^1",
+		"eslint-plugin-better-tailwindcss": "^3",
+		"eslint-plugin-import": "^2",
+		"lucide-react": "^0",
+		"motion": "^12",
+		"semantic-release": "^25",
+		"tailwind-merge": "^3",
+		"tailwindcss": "^4",
+		"tw-animate-css": "^1",
+		"typescript": "^5",
+		"typescript-eslint": "^8"
+	},
+	"scripts": {
+		"build": "next build",
+		"dev": "next dev",
+		"lint": "eslint",
+		"start": "next start"
+	},
+	"postcss": {
+		"plugins": {
+			"@tailwindcss/postcss": {}
+		}
+	},
+	"release": {
+		"branches": [
+			"main"
+		],
+		"plugins": [
+			[
+				"@semantic-release/commit-analyzer",
+				{
+					"preset": "angular",
+					"parserOpts": {
+						"noteKeywords": [
+							"MAJOR",
+							"BREAKING"
+						]
+					},
+					"releaseRules": [
+						{
+							"type": "perf",
+							"release": "patch"
+						},
+						{
+							"type": "refactor",
+							"release": "patch"
+						},
+						{
+							"release": "major",
+							"breaking": true
+						}
+					]
+				}
+			],
+			[
+				"@semantic-release/release-notes-generator",
+				{
+					"preset": "conventionalcommits",
+					"presetConfig": {
+						"types": [
+							{
+								"type": "feat",
+								"section": "Feature"
+							},
+							{
+								"type": "fix",
+								"section": "Resolution"
+							},
+							{
+								"type": "perf",
+								"section": "Performance"
+							},
+							{
+								"type": "refactor",
+								"section": "Refactor"
+							},
+							{
+								"type": "chore",
+								"hidden": true
+							},
+							{
+								"type": "docs",
+								"hidden": true
+							},
+							{
+								"type": "style",
+								"hidden": true
+							},
+							{
+								"type": "test",
+								"hidden": true
+							}
+						]
+					}
+				}
+			],
+			"@semantic-release/npm",
+			[
+				"@semantic-release/changelog",
+				{
+					"changelogFile": "CHANGELOG.md"
+				}
+			],
+			[
+				"@semantic-release/git",
+				{
+					"assets": [
+						"CHANGELOG.md",
+						"package.json"
+					],
+					"message": "chore(release): ${nextRelease.version} [skip ci]"
+				}
+			]
+		]
+	}
+}

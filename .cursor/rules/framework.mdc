@@ -1,0 +1,691 @@
+---
+alwaysApply: true
+---
+
+# Framework Rules
+These rules define the strict standards for modern Next.js, React, and TypeScript conventions and rules.
+Cursor must follow these rules strictly when generating or modifying code.
+
+---
+
+# 1. React 19
+## 1.1 Server Components First (Default)
+- **Always use Server Components by default**
+- **Only use Client Components when necessary**
+
+```typescript
+/* ✓ Server Component (default) */
+export default async function Page() {
+  const data = await fetchData()
+
+  return {data}
+}
+
+/* ✓ Client Component (Conditional) */
+'use client'
+
+import { useState } from 'react'
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+
+  return <button onClick={() => setCount(count + 1)}>{count}
+}
+```
+
+### When to Use Client Components
+Use `"use client"` only when you need:
+- Event handlers (onClick, onChange, onSubmit)
+- Browser APIs (window, document, localStorage)
+- React hooks (useState, useEffect, useContext)
+- Animations (motion/react)
+- Third-party libraries that use hooks
+
+### Server Component Rules
+- ✕ Cannot use `"use client"`
+- ✕ Cannot use hooks (useState, useEffect, etc.)
+- ✕ Cannot use browser APIs
+- ✓ Can be async
+- ✓ Can fetch data directly
+- ✓ Can import Client Components
+
+## 1.2 React 19 Features
+### ref as a Prop (No forwardRef)
+```typescript
+/* ✓ React 19 - ref as prop */
+type InputProps = {
+  ref?         : React.Ref
+  placeholder? : string
+}
+
+function Input({ ref, placeholder }: InputProps) {
+  return
+}
+
+/* ✕ React 18 - Deprecated */
+const Input = forwardRef((props, ref) => {
+  return
+})
+```
+
+### use() Hook
+Read promises and context conditionally:
+```typescript
+import { use } from 'react'
+
+/* ✓ Use with promises */
+function Comments({ commentsPromise }: { commentsPromise: Promise }) {
+  const comments = use(commentsPromise)
+
+  return comments.map(c => {c.text})
+}
+
+/* ✓ Use with context after early return (unlike hooks!) */
+function Heading({ children }: { children?: ReactNode }) {
+  if (!children)
+    return null
+  
+  const theme = use(ThemeContext)
+
+  return { children }
+}
+```
+
+### Document Metadata
+Render metadata directly in components:
+```typescript
+function BlogPost({ post }: { post: Post }) {
+  return (
+      {post.title}
+      
+      {post.title}
+      {post.content}
+  )
+}
+```
+
+### Stylesheets with Precedence
+```typescript
+function Component() {
+  return (
+    <>
+      Content
+    </>
+  )
+}
+```
+
+### Async Scripts
+```typescript
+function Analytics() {
+  return ()
+}
+```
+
+## 1.3 Actions
+### Server Actions
+```typescript
+/* ✓ Server Action */
+'use server'
+
+import { revalidatePath } from 'next/cache'
+
+export async function updateUser(formData: FormData) {
+  const name = formData.get('name') as string
+  
+  await db.users.update({ name })
+  
+  revalidatePath('/profile')
+}
+```
+
+### useActionState (replaces formContextState)
+```typescript
+'use client'
+
+import { useActionState } from 'react'
+
+type State = {
+  error?   : string
+  success? : boolean
+}
+
+function ProfileForm() {
+  const [state, action, isPending] = useActionState(
+    async (prevState: State, formData: FormData): Promise => {
+      const name = formData.get('name') as string
+      
+      if (!name)
+        return { error: 'Name is required' }
+      
+      await updateUser(formData)
+
+      return { success: true }
+    },
+    { success: false }
+  )
+
+  return (
+      {isPending ? 'Saving..' : 'Save'}
+      
+      {state.error && {state.error}}
+      {state.success && Saved!}
+  )
+}
+```
+
+### useOptimistic
+```typescript
+'use client'
+
+import { useOptimistic } from 'react'
+
+type Todo = {
+  id        : number
+  text      : string
+  completed : boolean
+}
+
+function TodoList({ todos }: { todos: Todo[] }) {
+  const [ optimisticTodo, addTodo ] = useOptimistic(todos, (state, task: Todo) => [...state, task])
+
+  async function add(formData: FormData) {
+    const text = formData.get('text') as string
+    const task = { id: Date.now(), text, completed: false }
+    
+    addTodo(task)
+    
+    await save(task)
+  }
+
+  return (
+    <>
+      {
+        optimisticTodo.map(todo => (
+          {todo.text}
+        ))
+      }
+
+      Add
+    </>
+  )
+}
+```
+
+## 1.4 React Hooks Best Practices
+### Allowed Hooks
+- `useState`, `useReducer`            - State management
+- `useEffect`, `useLayoutEffect`      - Side effects
+- `useCallback`, `useMemo`            - Optimization
+- `useRef`, `useImperativeHandle`     - Refs
+- `useContext`, `use`                 - Context
+- `useTransition`, `useDeferredValue` - Concurrent features
+- `useActionState`                    - Form Actions (React 19)
+- `useOptimistic`                     - Optimistic updates (React 19)
+
+### Avoid in Server Components
+```typescript
+/* ✕ Server Component with Hooks */
+export default function Page() {
+  const [state, setState] = useState(0) /* ERROR! */
+
+  return {state}
+}
+
+/* ✓ Move to Client Component */
+'use client'
+
+export function Counter() {
+  const [state, setState] = useState(0)
+
+  return {state}
+}
+```
+
+### useEffect Best Practices
+```typescript
+/* ✕ Bad - Data fetching in useEffect */
+useEffect(() => {
+  fetch('/api/data').then(res => setData(res))
+}, [])
+
+/* ✓ Good - use Server Component or SWR */
+export default async function Page() {
+  const data = await fetchData()
+
+  return {data}
+}
+
+/* ✕ Bad - Missing Dependencies */
+useEffect(() => {
+  something(userId)
+}, []) /* Missing userId! */
+
+/* ✓ Good - exhaustive dependencies */
+useEffect(() => {
+  something(userId)
+}, [ userId ])
+```
+
+### useMemo and useCallback
+```typescript
+/* ✓ useMemo for expensive computations */
+const sorted = useMemo(() => {
+  return items.sort((a, b) => a.value - b.value)
+}, [ items ])
+
+/* ✓ useCallback for stable function references */
+const performClick = useCallback(() => {
+  something(id)
+}, [id])
+
+/* ✕ Do not use for cheap operations */
+const doubled = useMemo(() => count * 2, [ count ]) /* Overkill! */
+```
+
+## 1.5 Performance Optimization
+### React.memo
+```typescript
+/* ✓ Memo for expensive components */
+const Expensive = memo(function Expensive({ items }: Props) {
+  return items.map(item => )
+})
+
+/* ✓ With custom comparison */
+const UserCard = memo(
+  function UserCard({ user }: { user: User }) {
+    return {user.name}
+  },
+  (previous, next) => previous.user.id === next.user.id
+)
+```
+
+### Avoid Inline Objects/Functions
+```typescript
+/* ✕ Bad - Creates new reference every render */
+<Component style={{ margin: 10 }} onClick={() => click(id)} />
+
+/* ✓ Good - stable references */
+const style    = { margin: 10 }
+const callback = useCallback(() => click(id), [id])
+```
+
+---
+
+# 2. Next.js 16
+## 2.1 Async Request APIs (Critical, Must Follow)
+```typescript
+/* ✕ Next.js 15 - Break in Next.js 16 */
+export default function Page({ params, searchParams }) {
+  const id    = params.id
+  const query = searchParams.q
+}
+
+/* ✓ Next.js 16 - Required */
+type Props = {
+  params       : Promise
+  searchParams : Promise
+}
+
+export default async function Page({ params, searchParams }: Props) {
+  const { id } = await params
+  const { q }  = await searchParams
+  
+  return ID: {id}, Query: {q}
+}
+```
+
+### Must Await APIs
+```typescript
+/* ✓ All of these must be awaited */
+const params       = await params
+const searchParams = await searchParams
+const cookies      = await cookies()
+const headers      = await headers()
+const draftMode    = await draftMode()
+```
+
+### Metadata Functions Must Be Async
+```typescript
+/* ✓ generateMetadata must be async */
+export async function generateMetadata({ params }: Props): Promise {
+  const { id } = await params
+  const post   = await fetchPost(id)
+  
+  return {
+    title       : post.title,
+    description : post.description,
+  }
+}
+
+/* ✓ generateStaticParams must be async */
+export async function generateStaticParams() {
+  const posts = await fetchPosts()
+
+  return posts.map(post => ({ id: post.id }))
+}
+```
+
+## 2.2 Routing Changes
+### proxy.ts (Replaces middleware.ts)
+```typescript
+/* ✓ New: proxy.ts */
+import { NextRequest, NextResponse } from 'next/server'
+
+export default function proxy(request: NextRequest) {
+  if (!request.cookies.has('auth'))
+    return NextResponse.redirect(new URL('/login', request.url))
+  
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: [ '/dashboard/:path*', '/profile/:path*' ],
+}
+```
+
+**Note**: `middleware.ts` is deprecated, renamed to `proxy.ts`.
+
+### Parallel Routes MUST Have default.js
+```typescript
+/* ✓ Required: app/@modal/default.tsx */
+export default function Default() {
+  return null
+}
+
+import { notFound } from 'next/navigation'
+
+export default function Default() {
+  return notFound()
+}
+```
+
+**Builds will fail without `default.js` in all parallel route slots.**
+
+## 2.3 Cache Components
+### Enable in Config
+```typescript
+/* next.config.ts */
+const config = {
+  cacheComponents: true,
+}
+
+export default config
+```
+
+### Use "use cache" Directive
+```typescript
+/* ✓ Cache entire page */
+'use cache'
+
+export default async function Page() {
+  const data = await fetchData()
+
+  return {data}
+}
+
+/* ✓ Cache component */
+'use cache'
+
+async function ProductList() {
+  const products = await fetchProducts()
+  
+  return products.map(p => {p.name})
+}
+
+/* ✓ Cache function */
+'use cache'
+
+async function getUser(id: string) {
+  return await db.users.findOne(id)
+}
+```
+
+## 2.4 Caching APIs
+
+### revalidateTag() - Requires Profile
+```typescript
+import { revalidateTag } from 'next/cache'
+
+/* ✓ With cacheLife profile (recommended: 'max') */
+revalidateTag('blog-posts', 'max') /* stale-while-revalidate */
+revalidateTag('news-feed',  'hours')
+revalidateTag('analytics',  'days')
+
+/* ✓ With inline object */
+revalidateTag('products', { expire: 3600 })
+
+/* ✕ Deprecated - single argument */
+revalidateTag('blog-posts')
+```
+
+### updateTag() - Server Actions Only
+For read-your-writes semantics:
+```typescript
+'use server'
+
+import { updateTag } from 'next/cache'
+
+export async function updateUserProfile(userId: string, data: ProfileData) {
+  await db.users.update(userId, data)
+  
+  updateTag(`user-${userId}`)
+}
+```
+
+### refresh() - Uncached Data Only
+```typescript
+'use server'
+
+import { refresh } from 'next/cache'
+
+export async function markNotificationAsRead(notificationId: string) {
+  await db.notifications.markAsRead(notificationId)
+
+  refresh()
+}
+```
+
+### fetch() with Caching
+```typescript
+/* ✓ Revalidate every hour */
+const data = await fetch('https://service.luniasola.com/data', {
+  next: { revalidate: 3600 }
+})
+
+/* ✓ Tag for manual revalidation */
+const data = await fetch('https://service.luniasola.com/data', {
+  next: { tags: [ 'products' ] }
+})
+
+/* Later: revalidateTag('products', 'max') */
+
+/* ✓ No caching */
+const data = await fetch('https://service.luniasola.com/data', {
+  cache: 'no-store'
+})
+```
+
+## 2.5 Data Fetching
+### Server Components (Preferred)
+```typescript
+/* ✓ Direct async/await in Server Component */
+export default async function Page() {
+  const data = await fetchData()
+  const user = await fetchUser()
+  
+  return (
+      {data.title}
+      Welcome, {user.name}
+    
+  )
+}
+
+/* ✓ Parallel fetching */
+export default async function Page() {
+  const [data, user] = await Promise.all([
+    fetchData(),
+    fetchUser()
+  ])
+  
+  return {data.title}
+}
+```
+
+### Route Handlers (API Routes)
+```typescript
+/* app/api/users/route.ts */
+import { NextRequest, NextResponse } from 'next/server'
+
+/* GET /api/users */
+export async function GET(request: NextRequest) {
+  const users = await db.users.findAll()
+
+  return NextResponse.json(users)
+}
+
+/* POST /api/users */
+export async function POST(request: NextRequest) {
+  const body = await request.json()
+  const user = await db.users.create(body)
+
+  return NextResponse.json(user, { status: 201 })
+}
+
+/* Dynamic route: app/api/users/[id]/route.ts */
+type Params = Promise
+
+export async function GET(request: NextRequest, { params }: { params: Params }) {
+  const { id } = await params /* await! */
+  const user   = await db.users.findOne(id)
+  
+  if (!user)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  
+  return NextResponse.json(user)
+}
+```
+
+## 2.6 Image Component Changes
+### New Defaults (Next.js 16)
+```typescript
+/* 
+    Updated defaults:
+    - minimumCacheTTL         : 60s → 14400s (4 hours)
+    - imageSizes              : removed 16px from default
+    - qualities               : [1..100] → [75]
+    - dangerouslyAllowLocalIP : true → false
+    - maximumRedirects        : unlimited → 3
+*/
+import Image from 'next/image'
+```
+
+### Local Images with Query Strings
+Now requires `localPatterns`:
+```typescript
+/* next.config.ts */
+const config = {
+  images: {
+    localPatterns: [
+      {
+        pathname : '/assets/images/**',
+        search   : '',
+      },
+    ],
+  },
+}
+```
+
+### Remote Patterns (Replaces domains)
+```typescript
+/* next.config.ts */
+const config = {
+  images: {
+    remotePatterns: [
+      {
+        protocol : 'https',
+        hostname : 'luniasola.com',
+        port     : '',
+        pathname : '/images/**',
+      },
+    ],
+  },
+}
+
+/* ✕ Deprecated: images.domains */
+{ domains: [ 'luniasola.com' ], }
+```
+
+## 2.7 Build & Performance
+### Turbopack (Default Bundler)
+```bash
+npm run dev
+npm run build
+
+npm run dev -- --webpack
+npm run build -- --webpack
+```
+
+### Filesystem Caching (Beta)
+```typescript
+/* next.config.ts */
+const config = {
+  experimental: {
+    turbopackFileSystemCacheForDev: true,
+  },
+}
+```
+
+Enables faster dev server startup by caching compilation results.
+
+### React Compiler (Stable, Optional)
+```typescript
+/* next.config.ts */
+const config = {
+  reactCompiler: true,
+}
+```
+
+**Note**: Increases build time due to Babel, only enable (Condition) IF need automatic memoization.
+
+## 2.8 Removed Features (Do Not Use)
+```typescript
+/* ✕ Removed in Next.js 16 */
+import { useAmp } from 'next/amp' /* AMP Support removed */
+export const config = { amp: true } /* AMP Config removed */
+
+/* ✕ Removed configs */
+export const config = {
+  runtime: 'experimental-edge', /* Use edge runtime via export */
+}
+
+/* ✕ Removed APIs */
+import { unstable_rootParams } from 'next/navigation'
+
+/* ✕ Deprecated */
+import Image from 'next/legacy/image'
+
+/* ✕ Deprecated in config */
+export default {
+  images: {
+    domains: [ 'luniasola.com' ], /* Use remotePatterns */
+  },
+}
+```
+
+## 2.9 File Structure & Logging
+### Separate Output Directories
+- `next dev` and `next build` now use separate output directories
+- Can run concurrently (dev and build at same time)
+- Lockfile prevents multiple instances on same project
+
+### Enhanced Logging
+```bash
+✓ Compiled successfully in 615ms
+✓ Finished TypeScript in 1114ms
+✓ Collecting page data in 208ms
+✓ Generating static pages in 239ms
+✓ Finalizing page optimization in 5ms
+```
+
+---

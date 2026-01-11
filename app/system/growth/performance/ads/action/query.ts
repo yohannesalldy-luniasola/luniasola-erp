@@ -1,0 +1,98 @@
+import 'server-only'
+
+import type { SchemaSearchParam, ColumnTable } from '@/app/system/growth/performance/ads/action/schema'
+import type { SupabaseMeta }                   from '@/library/supabase/type'
+
+import { redirect } from 'next/navigation'
+
+import { cache } from 'react'
+
+import { LABEL, PATH, TABLE, TABLE_ACCOUNT, TABLE_COLUMN_SORT } from '@/app/system/growth/performance/ads/action/schema'
+import { number }                                               from '@/component/utility/data'
+import { server }                                               from '@/library/supabase/server'
+
+export const list = cache(async (params: SchemaSearchParam): Promise<Readonly<{ data : readonly ColumnTable[], metadata : SupabaseMeta}>> => {
+	const supabase = await server()
+
+	const { page, limit, sort, channel } = params
+
+	const offset = (page - 1) * limit
+
+	let sortBy		  : string 		   = 'date'
+	let sortDirection : 'asc' | 'desc' = 'desc'
+
+	if (sort) {
+		const [ field, direction ] = sort.split('-')
+		
+		if (field && TABLE_COLUMN_SORT.includes(field as typeof TABLE_COLUMN_SORT[number]))
+			sortBy = field
+		
+		if (direction === 'asc' || direction === 'desc')
+			sortDirection = direction
+	}
+
+	let supabaseQuery = supabase.from(TABLE).select('*, ads_performance_account(account(id, name))', { count : 'exact' })
+
+	if (channel && channel !== 'all')
+		supabaseQuery = supabaseQuery.eq('channel', channel)
+
+	supabaseQuery = supabaseQuery.order(sortBy, { ascending : sortDirection === 'asc' }).order('id', { ascending : true }).range(offset, offset + limit - 1)
+
+	const { data, error, count } = await supabaseQuery
+
+	if (error)
+		throw new Error((LABEL + ' ' + 'fetch was unsuccessful') + ':' + ' ' + (error.message ?? JSON.stringify(error)))
+
+	const total = count ?? 0
+
+	if (page > (Math.ceil(total / limit)) && total > 0) {
+		const redirection = new URLSearchParams()
+
+		Object.entries(params).forEach(([ key, value ]) => (value !== null && value !== undefined && value !== '' && key !== 'page' && key !== 'limit') && redirection.set(key, String(value)))
+		redirection.set('page', String((Math.ceil(total / limit))))
+
+		redirect(PATH + '?' + redirection.toString())
+	}
+
+	return {
+		data : (data ?? []).map(({ ads_performance_account, ...column }) => ({ 
+			...column, 
+			cost                  : number(column.cost),
+			adsPerformanceAccount : ads_performance_account,
+		})) as readonly ColumnTable[],
+		metadata : {
+			total,
+			limit,
+			page : {
+				total   : Math.ceil(total / limit),
+				current : page,
+			},
+		},
+	}
+})
+
+export const listAccount = cache(async (): Promise<{ data : readonly { id : string, name : string }[] }> => {
+	const supabase = await server()
+	
+	const { data, error } = await supabase.from(TABLE_ACCOUNT).select('id, name').order('name', { ascending : true })
+
+	if (error)
+		return { data : [] }
+
+	return { data : (data ?? []) as readonly { id : string, name : string }[] }
+})
+
+export const get = cache(async (id: string): Promise<ColumnTable | null> => {
+	if (!id)
+		return null
+
+	const supabase 		  = await server()
+	const { data, error } = await supabase.from(TABLE).select('*, ads_performance_account(account(id, name))').eq('id', id).single()
+
+	if (error)
+		return null
+
+	const record = data as unknown as { ads_performance_account? : ColumnTable['adsPerformanceAccount'] } & ColumnTable
+
+	return { ...record, adsPerformanceAccount : record.ads_performance_account, cost : number(record.cost) } as ColumnTable
+})
