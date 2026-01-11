@@ -1,5 +1,3 @@
-import type { ReadonlyComponentProps } from '@/component/utility/component'
-
 import { Div }        from '@/component/canggu/block'
 import { classNames } from '@/component/utility/style'
 
@@ -18,7 +16,7 @@ export function CardHeader({ className, ...props }: CardHeader) {
 }
 
 export function CardTitle({ className, ...props }: CardTitle) {
-	return <h3 className={classNames('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
+	return <h3 className={classNames('text-lg leading-none font-semibold tracking-tight', className)} {...props} />
 }
 
 export function CardContent({ className, ...props }: CardContent) {
@@ -28,4 +26,3 @@ export function CardContent({ className, ...props }: CardContent) {
 export function CardFooter({ className, ...props }: CardFooter) {
 	return <Div className={classNames('flex items-center p-6 pt-0', className)} {...props} />
 }
-
