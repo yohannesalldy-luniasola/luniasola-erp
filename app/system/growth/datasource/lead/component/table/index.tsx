@@ -16,10 +16,10 @@ import { FormRemoval, FormUpdate }                                              
 import { Badge }                                                                                         from '@/component/canggu/badge'
 import { Div, Span }                                                                                     from '@/component/canggu/block'
 import { Button }                                                                                        from '@/component/canggu/button'
-import { ExtraSmall, Small }                                                                            from '@/component/canggu/typography'
-import { classNames }                                                                                    from '@/component/utility/style'
+import { ExtraSmall, Small }                                                                             from '@/component/canggu/typography'
 import { useKeyboard }                                                                                   from '@/component/hook/keyboard'
 import { useTable, useTableColumnVisibility }                                                            from '@/component/hook/table'
+import { classNames }                                                                                    from '@/component/utility/style'
 
 export function Table({ data }: { readonly data : readonly ColumnTable[] }) {
 	const table 		 = useTable(data)
@@ -62,11 +62,11 @@ export function Table({ data }: { readonly data : readonly ColumnTable[] }) {
 				return (
 					<Badge>
 						<Span className={classNames('size-2 rounded-full', {
-							'bg-yellow-500'     : column.status === 'pending',
-							'bg-blue-500'       : column.status === 'in progress',
-							'bg-red-500'        : column.status === 'cancelled',
-							'bg-emerald-500'    : column.status === 'passed',
-							'bg-neutral-400'   : !column.status,
+							'bg-yellow-500'  : column.status === 'pending',
+							'bg-blue-500'    : column.status === 'in progress',
+							'bg-red-500'     : column.status === 'cancelled',
+							'bg-emerald-500' : column.status === 'passed',
+							'bg-neutral-400' : !column.status,
 						})} />
 						<ExtraSmall className={'font-semibold text-inherit! capitalize'}>{column.status ?? 'pending'}</ExtraSmall>
 					</Badge>

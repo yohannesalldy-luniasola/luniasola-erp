@@ -1,8 +1,8 @@
 import type { SchemaAction }         from '@/component/utility/schema'
 import type { SupabaseSystemColumn } from '@/library/supabase/type'
 
-import { Link } from 'lucide-react'
-import { z }    from 'zod'
+import { BadgeDollarSign } from 'lucide-react'
+import { z }               from 'zod'
 
 import { SEARCH_PARAMS, SEARCH_PARAMS_LIMIT, SEARCH_PARAMS_INITIAL } from '@/component/utility/schema'
 
@@ -15,7 +15,7 @@ export type ColumnSort 		  = typeof TABLE_COLUMN_SORT[number]
 export type ColumnVisibility  = Record<Column, boolean>
 export type ColumnTable 	  = Readonly<Schema> & SupabaseSystemColumn
 
-export const ICON		          = Link
+export const ICON		          = BadgeDollarSign
 export const LABEL		          = 'Lead' 	   					   as const 
 export const PATH  		          = '/system/growth/datasource/lead' as const 
 export const TABLE                = 'lead' 		 	 	 	 	   as const

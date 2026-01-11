@@ -1,11 +1,11 @@
 import type { SearchParams } from '@/type/next'
 
 import { ToolbarLimit, ToolbarLimitFallback }                               from '@/app/system/component/toolbar/limit'
-import { list }                                                             from '@/app/system/growth/datasource/people/action/query'
-import { SCHEMA_SEARCH_PARAMS_INITIAL, SCHEMA_LIMIT, SCHEMA_SEARCH_PARAMS } from '@/app/system/growth/datasource/people/action/schema'
-import { ToolbarDisplay, ToolbarDisplayFallback }                           from '@/app/system/growth/datasource/people/component/toolbar/display'
-import { ToolbarFilter, ToolbarFilterFallback }                             from '@/app/system/growth/datasource/people/component/toolbar/filter'
-import { ToolbarProduce, ToolbarProduceFallback }                           from '@/app/system/growth/datasource/people/component/toolbar/produce'
+import { list }                                                             from '@/app/system/growth/datasource/lead/action/query'
+import { SCHEMA_SEARCH_PARAMS_INITIAL, SCHEMA_LIMIT, SCHEMA_SEARCH_PARAMS } from '@/app/system/growth/datasource/lead/action/schema'
+import { ToolbarDisplay, ToolbarDisplayFallback }                           from '@/app/system/growth/datasource/lead/component/toolbar/display'
+import { ToolbarFilter, ToolbarFilterFallback }                             from '@/app/system/growth/datasource/lead/component/toolbar/filter'
+import { ToolbarProduce, ToolbarProduceFallback }                           from '@/app/system/growth/datasource/lead/component/toolbar/produce'
 import { Section }                                                          from '@/component/canggu/block'
 import { parse }                                                            from '@/component/utility/parameter'
 
