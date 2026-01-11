@@ -9,13 +9,25 @@ import { server }                                  from '@/library/supabase/serv
 
 type AuthenticationResponse = Readonly<{ success : boolean, error? : string }>
 
+function getSiteUrl(): string {
+	const url = process.env.NEXT_PUBLIC_SITE_URL
+
+	if (!url)
+		throw new Error('Missing environment variable: NEXT_PUBLIC_SITE_URL')
+
+	return url.endsWith('/') ? url.slice(0, -1) : url
+}
+
 export async function session(): Promise<AuthenticationResponse> {
 	const supabase: SupabaseClient = await server()
+
+	const siteUrl = getSiteUrl()
+	const redirectTo = siteUrl + ROUTE_AUTHENTICATION.CALLBACK
 
 	const { data, error } = await supabase.auth.signInWithOAuth({
 		provider : 'google',
 		options  : {
-			redirectTo : process.env.NEXT_PUBLIC_SITE_URL + ROUTE_AUTHENTICATION.CALLBACK,
+			redirectTo,
 		},
 	})
 
