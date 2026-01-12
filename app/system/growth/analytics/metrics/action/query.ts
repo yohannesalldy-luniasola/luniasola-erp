@@ -7,12 +7,12 @@ import { cache } from 'react'
 import { server } from '@/library/supabase/server'
 
 export type LeadMetric = {
-	readonly id        : string
-	readonly name      : string
-	readonly gclid     : string | null
-	readonly fbclid    : string | null
-	readonly status    : string
-	readonly created_at: string
+	readonly id         : string
+	readonly name       : string
+	readonly gclid      : string | null
+	readonly fbclid     : string | null
+	readonly status     : string
+	readonly created_at : string
 }
 
 export type DealMetric = {
@@ -23,8 +23,8 @@ export type DealMetric = {
 
 export type CampaignMetric = {
 	readonly campaign : string
-	readonly cost    : number
-	readonly date    : string
+	readonly cost     : number
+	readonly date     : string
 }
 
 export type MetricsData = {
@@ -48,14 +48,30 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 
 	let leadsQuery = supabase.from('lead').select('*')
 
-	if (dateFrom)
-		leadsQuery = leadsQuery.gte('created_at', dateFrom)
+	if (dateFrom) {
+		const dateFromIndonesia = dateFrom + 'T00:00:00+07:00'
+		const dateFromUTC = new Date(dateFromIndonesia)
+		const dateFromStart = dateFromUTC.toISOString()
+		leadsQuery = leadsQuery.gte('created_at', dateFromStart)
+	}
 
-	if (dateTo)
-		leadsQuery = leadsQuery.lte('created_at', dateTo)
+	if (dateTo) {
+		const dateToNextDayIndonesia = dateTo + 'T00:00:00+07:00'
+		const dateToNextDayUTC = new Date(dateToNextDayIndonesia)
+		dateToNextDayUTC.setUTCDate(dateToNextDayUTC.getUTCDate() + 1)
+		const dateToEnd = dateToNextDayUTC.toISOString()
+		leadsQuery = leadsQuery.lt('created_at', dateToEnd)
+	}
 
 	if (campaign)
 		leadsQuery = leadsQuery.or('gclid.ilike.%' + campaign + '%,fbclid.ilike.%' + campaign + '%')
+
+	if (channel && channel !== 'all') {
+		if (channel === 'google')
+			leadsQuery = leadsQuery.not('gclid', 'is', null)
+		else if (channel === 'facebook')
+			leadsQuery = leadsQuery.not('fbclid', 'is', null)
+	}
 
 	const { data: leadsData, error: leadsError } = await leadsQuery
 
@@ -68,11 +84,20 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 	try {
 		let dealsQuery = supabase.from('deal').select('*')
 
-		if (dateFrom)
-			dealsQuery = dealsQuery.gte('created_at', dateFrom)
+		if (dateFrom) {
+			const dateFromIndonesia = dateFrom + 'T00:00:00+07:00'
+			const dateFromUTC = new Date(dateFromIndonesia)
+			const dateFromStart = dateFromUTC.toISOString()
+			dealsQuery = dealsQuery.gte('created_at', dateFromStart)
+		}
 
-		if (dateTo)
-			dealsQuery = dealsQuery.lte('created_at', dateTo)
+		if (dateTo) {
+			const dateToNextDayIndonesia = dateTo + 'T00:00:00+07:00'
+			const dateToNextDayUTC = new Date(dateToNextDayIndonesia)
+			dateToNextDayUTC.setUTCDate(dateToNextDayUTC.getUTCDate() + 1)
+			const dateToEnd = dateToNextDayUTC.toISOString()
+			dealsQuery = dealsQuery.lt('created_at', dateToEnd)
+		}
 
 		const { data: dealsData } = await dealsQuery
 		deals = (dealsData ?? []) as readonly DealMetric[]
@@ -111,4 +136,3 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 		purchase,
 	}
 })
-

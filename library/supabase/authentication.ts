@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+import { headers }  from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { ROUTE_AUTHENTICATION, ROUTE_REDIRECTION } from '@/library/supabase/proxy'
@@ -9,19 +10,40 @@ import { server }                                  from '@/library/supabase/serv
 
 type AuthenticationResponse = Readonly<{ success : boolean, error? : string }>
 
-function getSiteUrl(): string {
-	const url = process.env.NEXT_PUBLIC_SITE_URL
+async function getSiteUrl(): Promise<string> {
+	const headersList = await headers()
+	const host = headersList.get('host')
+	const protocol = headersList.get('x-forwarded-proto') || 'https'
 
-	if (!url)
-		throw new Error('Missing environment variable: NEXT_PUBLIC_SITE_URL')
+	if (host && !host.includes('localhost')) {
+		const url = protocol + '://' + host
 
-	return url.endsWith('/') ? url.slice(0, -1) : url
+		return url.endsWith('/') ? url.slice(0, -1) : url
+	}
+
+	let url = process.env.NEXT_PUBLIC_SITE_URL
+
+	if (!url) {
+		const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+
+		if (vercelUrl)
+			url = 'https://' + vercelUrl
+		else
+			throw new Error('Missing environment variable: NEXT_PUBLIC_SITE_URL')
+	}
+
+	url = url.endsWith('/') ? url.slice(0, -1) : url
+
+	if (!url.startsWith('http'))
+		url = 'https://' + url
+
+	return url
 }
 
 export async function session(): Promise<AuthenticationResponse> {
 	const supabase: SupabaseClient = await server()
 
-	const siteUrl = getSiteUrl()
+	const siteUrl = await getSiteUrl()
 	const redirectTo = siteUrl + ROUTE_AUTHENTICATION.CALLBACK
 
 	const { data, error } = await supabase.auth.signInWithOAuth({

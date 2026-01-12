@@ -6,12 +6,12 @@ import { useCallback } from 'react'
 
 import { ExternalLink, MessageSquare } from 'lucide-react'
 
-import { Badge }                                                                  from '@/component/canggu/badge'
-import { Card }                                                                    from '@/component/canggu/card'
-import { Div, Span, Small }                                                        from '@/component/canggu/block'
-import { ExtraSmall }                                                              from '@/component/canggu/typography'
+import { Badge }                                                                      from '@/component/canggu/badge'
+import { Div, Span, Small }                                                           from '@/component/canggu/block'
+import { Card }                                                                       from '@/component/canggu/card'
 import { Table as TableRoot, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/component/canggu/table'
-import { classNames }                                                              from '@/component/utility/style'
+import { ExtraSmall }                                                                 from '@/component/canggu/typography'
+import { classNames }                                                                 from '@/component/utility/style'
 
 function formatDate(dateString: string): string {
 	return new Date(dateString).toLocaleDateString('id-ID', {
@@ -77,13 +77,13 @@ export function Table({ leads }: { readonly leads : readonly LeadMetric[] }) {
 					<TableBody>
 						{leads.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={6} className={'text-center text-neutral-500'}>
+								<TableCell className={'text-center text-neutral-500'} colSpan={6}>
 									No leads found
 								</TableCell>
 							</TableRow>
 						) : (
 							leads.map((lead) => (
-								<TableRow key={lead.id} className={'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900'} onClick={() => handleLeadClick(lead)}>
+								<TableRow className={'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900'} key={lead.id} onClick={() => handleLeadClick(lead)}>
 									<TableCell>
 										<Span className={'font-medium'}>{lead.name}</Span>
 									</TableCell>
@@ -117,4 +117,3 @@ export function Table({ leads }: { readonly leads : readonly LeadMetric[] }) {
 		</Card>
 	)
 }
-

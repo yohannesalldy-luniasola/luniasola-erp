@@ -6,11 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 import { useCallback, useState } from 'react'
 
-import { Calendar, Filter } from 'lucide-react'
+import { Filter } from 'lucide-react'
 
-import { Button }                                   from '@/component/canggu/button'
-import { Card }                                     from '@/component/canggu/card'
-import { Div, Span }                                from '@/component/canggu/block'
+import { Div, Span }                                                                             from '@/component/canggu/block'
+import { Button }                                                                                from '@/component/canggu/button'
+import { Card }                                                                                  from '@/component/canggu/card'
 import { Fieldset, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/component/canggu/form'
 
 export function Filters({ params }: { readonly params : SchemaSearchParam }) {
@@ -111,14 +111,13 @@ export function Filters({ params }: { readonly params : SchemaSearchParam }) {
 			</Div>
 
 			<Div className={'mt-4 flex gap-2'}>
-				<Button onClick={handleFilter} size={'sm'}>
+				<Button size={'sm'} onClick={handleFilter}>
 					Apply Filters
 				</Button>
-				<Button appearance={'ghost'} onClick={handleClear} size={'sm'}>
+				<Button appearance={'ghost'} size={'sm'} onClick={handleClear}>
 					Clear
 				</Button>
 			</Div>
 		</Card>
 	)
 }
-
