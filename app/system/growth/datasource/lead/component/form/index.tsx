@@ -3,7 +3,10 @@
 import type { Action, ColumnTable } from '@/app/system/growth/datasource/lead/action/schema'
 import type { ID }                  from '@/component/hook/table'
 
-import { Plus } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+
+import { Plus }  from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Form, FormRemoval as FormRemovalRoot, useForm } from '@/app/system/component/form'
 import { insert, update, remove }                        from '@/app/system/growth/datasource/lead/action/mutation'
@@ -49,16 +52,58 @@ export function FormUpdate({ open, onOpenChange, onUpdate, data }: FormUpdate) {
 		status : data.status,
 	}
 	
+	const toastIdRef = useRef<string | number | null>(null)
+	const previousStatusRef = useRef<string | undefined>(data.status)
+	
 	const action = async (state: Action, formData: FormData) => {
+		const newStatus = formData.get('status') as string
+		const statusChanged = previousStatusRef.current !== newStatus
+
+		if (statusChanged) {
+			toastIdRef.current = toast.loading('Sending data to Google...', {
+				description : 'Updating lead status and syncing with Google',
+				duration    : Infinity,
+			})
+		}
+
 		await onUpdate(data.id, {
 			name   : formData.get('name')   as string,
 			gclid  : formData.get('gclid')  as string,
 			fbclid : formData.get('fbclid') as string,
-			status : formData.get('status') as string,
+			status : newStatus,
 		} as Partial<ColumnTable>)
 
-		return await update(state, formData)
+		const result = await update(state, formData)
+
+		if (statusChanged && toastIdRef.current) {
+			if (result.status === 'success') {
+				toast.success('Status updated successfully', {
+					description : 'Lead status has been synced with Google',
+					id          : toastIdRef.current,
+				})
+			} else if (result.status === 'error') {
+				toast.error('Update failed', {
+					description : result.message || 'Failed to sync with Google',
+					id          : toastIdRef.current,
+				})
+			}
+			toastIdRef.current = null
+		}
+
+		previousStatusRef.current = newStatus
+
+		return result
 	}
+
+	useEffect(() => {
+		if (!open) {
+			previousStatusRef.current = data.status
+			if (toastIdRef.current) {
+				toast.dismiss(toastIdRef.current)
+				toastIdRef.current = null
+			}
+		}
+	}, [ open, data.status ])
 
 	return (
 		<Form action={action} className={'w-3xl'} defaultOpen={open} icon={ICON} label={LABEL} mode={'update'} path={PATH} onOpenChange={onOpenChange}>
