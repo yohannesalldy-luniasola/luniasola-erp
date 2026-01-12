@@ -5,7 +5,7 @@ import type { ReactNode }   from 'react'
 
 import { useCallback } from 'react'
 
-import { PenLine, Trash2, CircleUserRound } from 'lucide-react'
+import { PenLine, Trash2, CircleUserRound, Flag } from 'lucide-react'
 
 import { useForm }                                                                                       from '@/app/system/component/form'
 import { Table as TableRoot, TableSkeleton as TableSkeletonRoot }                                        from '@/app/system/component/table'
@@ -58,7 +58,14 @@ export function Table({ data }: { readonly data : readonly ColumnTable[] }) {
 				)
 
 			case 'country':
-				return <Small>{mapCountry(column.country)}</Small>
+				return (
+					<Div className={'flex flex-row items-center gap-2.5'}>
+						<Flag className={'size-3.5'} />
+						<Span className={'inline-flex items-center text-sm'}>
+							{column.country && column.country !== '' ? mapCountry(column.country) : <ExtraSmall className={'text-neutral-500'}>No Country Provided (Update Required)</ExtraSmall>}
+						</Span>
+					</Div>
+				)
 
 			case 'status':
 				return (
