@@ -6,9 +6,10 @@ import { Suspense } from 'react'
 import { FormProvider }                                                    from '@/app/system/component/form'
 import { Pagination }                                                      from '@/app/system/component/pagination'
 import { ToolbarFilterProvider }                                           from '@/app/system/component/toolbar/filter'
-import { list }                                                             from '@/app/system/growth/datasource/lead/action/query'
+import { list }                                                            from '@/app/system/growth/datasource/lead/action/query'
 import { ICON, LABEL, SCHEMA_SEARCH_PARAMS_INITIAL, SCHEMA_SEARCH_PARAMS } from '@/app/system/growth/datasource/lead/action/schema'	
 import { FormCreateServer, FormCreateServerFallback }                      from '@/app/system/growth/datasource/lead/component/form/server'
+import { PageRefresh }                                                     from '@/app/system/growth/datasource/lead/component/page/refresh'
 import { Table, TableSkeleton }                                            from '@/app/system/growth/datasource/lead/component/table'
 import { Toolbar, ToolbarFallback }                                        from '@/app/system/growth/datasource/lead/component/toolbar'
 import { Section, Div }                                                    from '@/component/canggu/block'
@@ -23,6 +24,7 @@ export function Context({ children }: Context) {
 	return (
 		<FormProvider>
 			<ToolbarFilterProvider>
+				<PageRefresh />
 				{children}
 			</ToolbarFilterProvider>
 		</FormProvider>

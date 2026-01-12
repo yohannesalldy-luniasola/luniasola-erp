@@ -9,6 +9,7 @@ import { ToolbarFilterProvider }                                           from 
 import { list }                                                            from '@/app/system/growth/datasource/account/action/query'
 import { ICON, LABEL, SCHEMA_SEARCH_PARAMS_INITIAL, SCHEMA_SEARCH_PARAMS } from '@/app/system/growth/datasource/account/action/schema'	
 import { FormCreate }                                                      from '@/app/system/growth/datasource/account/component/form'
+import { PageRefresh }                                                     from '@/app/system/growth/datasource/account/component/page/refresh'
 import { Table, TableSkeleton }                                            from '@/app/system/growth/datasource/account/component/table'
 import { Toolbar, ToolbarFallback }                                        from '@/app/system/growth/datasource/account/component/toolbar'
 import { Section, Div }                                                    from '@/component/canggu/block'
@@ -23,6 +24,7 @@ export function Context({ children }: Context) {
 	return (
 		<FormProvider>
 			<ToolbarFilterProvider>
+				<PageRefresh />
 				{children}
 			</ToolbarFilterProvider>
 		</FormProvider>
