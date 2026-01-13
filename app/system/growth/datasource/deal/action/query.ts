@@ -125,13 +125,33 @@ export const listAvailablePeople = cache(async (): Promise<{ data : readonly { i
 	if (peopleError || !people || people.length === 0)
 		return { data : [] }
 
+	// Fetch all leads with their status
+	const { data: leads, error: leadsError } = await supabase
+		.from('lead')
+		.select('name, status')
+
+	if (leadsError)
+		return { data : [] }
+
+	// Create a set of names from leads with status 'passed'
+	const passedLeadNames = new Set<string>()
+	leads?.forEach((lead: any) => {
+		if (lead.status === 'passed' && lead.name)
+			passedLeadNames.add(lead.name)
+	})
+
+	// Filter people to only include those whose name matches a lead with status 'passed'
+	const peopleWithPassedStatus = (people as readonly { id : string, name : string }[]).filter((person) => 
+		passedLeadNames.has(person.name),
+	)
+
 	// Fetch all people already linked to any account
 	const { data: accountPeople, error: accountPeopleError } = await supabase
 		.from('account_people')
 		.select('people')
 
 	if (accountPeopleError)
-		return { data : people as readonly { id : string, name : string }[] }
+		return { data : peopleWithPassedStatus }
 
 	const usedPeopleIds = new Set<string>()
 
@@ -140,7 +160,8 @@ export const listAvailablePeople = cache(async (): Promise<{ data : readonly { i
 			usedPeopleIds.add(row.people as string)
 	})
 
-	const availablePeople = (people as readonly { id : string, name : string }[]).filter((person) => !usedPeopleIds.has(person.id))
+	// Filter out people already linked to accounts
+	const availablePeople = peopleWithPassedStatus.filter((person) => !usedPeopleIds.has(person.id))
 
 	return { data : availablePeople }
 })

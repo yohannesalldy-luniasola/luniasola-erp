@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 import { useState } from 'react'
 
-import { Building2, DollarSign, Tag, UserRound, X } from 'lucide-react'
+import { Building2, Tag, UserRound, X } from 'lucide-react'
 
 import { LABEL, SOURCE_VALUES, STAGE_VALUES }                                                             from '@/app/system/growth/datasource/deal/action/schema'
 import { Div, Span }                                                                                      from '@/component/canggu/block'
@@ -163,7 +163,7 @@ export function FormCollection({ state, defaultValues, id, provision = false, ac
 
 			<Fieldset>
 				<Label htmlFor={'amount'}>Amount</Label>
-				<Input adornment={<DollarSign className={'size-3.5'} />} defaultValue={values.amount} id={'amount'} name={'amount'} placeholder={'0'} type={'number'} />
+				<Input adornment={<Span className={'text-sm font-medium text-neutral-600 dark:text-neutral-400'}>Rp</Span>} defaultValue={values.amount} id={'amount'} name={'amount'} placeholder={'0'} type={'number'} />
 
 				{errors.amount && <Message>{errors.amount[0]}</Message>}
 			</Fieldset>
