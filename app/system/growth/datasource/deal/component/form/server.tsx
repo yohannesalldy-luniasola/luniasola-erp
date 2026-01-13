@@ -1,6 +1,7 @@
+import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/schema'
+
 import { listAccount, listAvailablePeople } from '@/app/system/growth/datasource/deal/action/query'
 import { FormCreate, FormUpdate }           from '@/app/system/growth/datasource/deal/component/form'
-import type { ColumnTable }                 from '@/app/system/growth/datasource/deal/action/schema'
 import { Skeleton }                         from '@/component/canggu/skeleton'
 
 export async function FormCreateServer() {
@@ -27,4 +28,3 @@ export async function FormUpdateServer({ open, onOpenChange, onUpdate, data }: F
 
 	return <FormUpdate account={account} data={data} open={open} people={people} onOpenChange={onOpenChange} onUpdate={onUpdate} />
 }
-

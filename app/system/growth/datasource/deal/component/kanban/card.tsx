@@ -171,7 +171,7 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 					{deal.source}
 				</Span>
 				<Div className={'flex gap-1'}>
-					<Button
+					{/* <Button
 						appearance={'ghost'}
 						className={'size-6 p-0'}
 						size={'sm'}
@@ -184,7 +184,7 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 						}}
 					>
 						<Edit className={'size-3'} />
-					</Button>
+					</Button> */}
 					<Button
 						appearance={'ghost'}
 						className={'size-6 p-0 text-red-500 hover:text-red-600'}

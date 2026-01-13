@@ -26,8 +26,8 @@ export function FormCollection({ state, defaultValues, id, provision = false, ac
 	const errors = state?.status === 'error' ? state.errors ?? {} : {}
 	const values = state?.status === 'error' ? state.inputs ?? defaultValues ?? {} : defaultValues ?? {}
 
-	const [ accountValue, setAccountValue ] = useState<string | undefined>(values.account)
-	const [ peopleValue, setPeopleValue ]   = useState<string | undefined>(undefined)
+	const [ accountValue, setAccountValue ] = useState<string | undefined>(values.account || undefined)
+	const [ peopleValue, setPeopleValue ]   = useState<string | undefined>(values.people || undefined)
 
 	const isAccountDisabled = !!peopleValue
 	const isPeopleDisabled  = !!accountValue
@@ -159,6 +159,9 @@ export function FormCollection({ state, defaultValues, id, provision = false, ac
 						</button>
 					)}
 				</Div>
+
+				{errors.people && <Message>{errors.people[0]}</Message>}
+				{errors.account && errors.account[0]?.includes('Either Account or Contact Person') && <Message>{errors.account[0]}</Message>}
 			</Fieldset>
 
 			<Fieldset>

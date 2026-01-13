@@ -12,6 +12,13 @@ import { server }                     from '@/library/supabase/server'
 export async function insert(_: Action, formData: FormData): Promise<Action> {
 	const timestamp  = Date.now()
 	const payload 	 = Object.fromEntries(formData)
+	
+	// Convert empty strings to undefined for account and people (will be converted to null in schema)
+	if (payload.account === '')
+		delete payload.account
+	if (payload.people === '')
+		delete payload.people
+	
 	const validation = SCHEMA.safeParse(payload)
 
 	if (!validation.success)
@@ -28,7 +35,8 @@ export async function insert(_: Action, formData: FormData): Promise<Action> {
         
 		const { error } = await supabase.from(TABLE).insert({
 			name    : validation.data.name,
-			account : validation.data.account,
+			account : validation.data.account || null,
+			people  : validation.data.people || null,
 			amount  : validation.data.amount,
 			source  : validation.data.source,
 			stage   : validation.data.stage,
@@ -83,7 +91,7 @@ export async function updateStage(id: string, stage: string): Promise<Action> {
 		const { data, error } = await supabase
 			.from(TABLE)
 			.update({
-				stage      : stage,
+				stage       : stage,
 				date_update : new Date().toISOString(),
 			})
 			.eq('id', id)
@@ -122,6 +130,13 @@ export async function update(_: Action, formData: FormData): Promise<Action> {
 	const timestamp  = Date.now()
 	const payload 	 = Object.fromEntries(formData)
 	const id         = payload.id as string
+	
+	// Convert empty strings to undefined for account and people (will be converted to null in schema)
+	if (payload.account === '')
+		delete payload.account
+	if (payload.people === '')
+		delete payload.people
+	
 	const validation = SCHEMA.safeParse(payload)
 
 	if (!id || typeof id !== 'string')
@@ -146,11 +161,12 @@ export async function update(_: Action, formData: FormData): Promise<Action> {
 		const { data, error } = await supabase
 			.from(TABLE)
 			.update({
-				name       : validation.data.name,
-				account    : validation.data.account,
-				amount     : validation.data.amount,
-				source     : validation.data.source,
-				stage      : validation.data.stage,
+				name        : validation.data.name,
+				account     : validation.data.account || null,
+				people      : validation.data.people || null,
+				amount      : validation.data.amount,
+				source      : validation.data.source,
+				stage       : validation.data.stage,
 				date_update : new Date().toISOString(),
 			})
 			.eq('id', id)

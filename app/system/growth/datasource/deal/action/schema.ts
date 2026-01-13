@@ -26,10 +26,17 @@ export const SOURCE_VALUES = [ 'Upwork', 'Google Ads', 'Referral', 'Meta Ads' ] 
 
 export const SCHEMA = z.object({
 	name    : z.string().min(1, 'Name is a mandatory field').max(255),
-	account : z.string().uuid('Account is a mandatory field'),
+	account : z.union([ z.string().uuid('Account must be a valid UUID'), z.literal(''), z.null() ]).optional().transform((val) => val === '' ? null : val),
+	people  : z.union([ z.string().uuid('Contact Person must be a valid UUID'), z.literal(''), z.null() ]).optional().transform((val) => val === '' ? null : val),
 	amount  : z.coerce.number().int().min(0, 'Amount must be a positive number'),
 	source  : z.enum(SOURCE_VALUES, 'Source is a mandatory field'),
 	stage   : z.enum(STAGE_VALUES, 'Stage is a mandatory field').default('Discovery'),
+}).refine((data) => data.account || data.people, {
+	message : 'Either Account or Contact Person must be filled',
+	path    : [ 'account' ],
+}).refine((data) => data.account || data.people, {
+	message : 'Either Account or Contact Person must be filled',
+	path    : [ 'people' ],
 })
 
 export const SCHEMA_SEARCH_PARAMS = z.object({
