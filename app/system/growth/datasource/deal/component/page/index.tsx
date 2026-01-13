@@ -4,7 +4,7 @@ import type { ReactNode }    from 'react'
 import { Suspense } from 'react'
 
 import { FormProvider }                                                    from '@/app/system/component/form'
-import { listByStage }                                                     from '@/app/system/growth/datasource/deal/action/query'
+import { listAccount, listAvailablePeople, listByStage }                  from '@/app/system/growth/datasource/deal/action/query'
 import { ICON, LABEL, SCHEMA_SEARCH_PARAMS, SCHEMA_SEARCH_PARAMS_INITIAL } from '@/app/system/growth/datasource/deal/action/schema'
 import { FormCreateServer, FormCreateServerFallback }                      from '@/app/system/growth/datasource/deal/component/form/server'
 import { HistoryButton }                                                   from '@/app/system/growth/datasource/deal/component/history'
@@ -61,12 +61,17 @@ export async function Body({ searchParams }: Page) {
 		source  : resolvedSearchParams.source as string | undefined,
 		account : resolvedSearchParams.account as string | undefined,
 	}
-	const data = await listByStage(filters)
+	
+	const [ data, accountResult, peopleResult ] = await Promise.all([
+		listByStage(filters),
+		listAccount(),
+		listAvailablePeople(),
+	])
 
 	return (
 		<Section className={'flex h-full min-h-0 flex-1 flex-col overflow-hidden'}>
 			<Div className={'flex min-h-0 flex-1 flex-col'}>
-				<KanbanClientWrapper data={data} />
+				<KanbanClientWrapper account={accountResult.data} data={data} people={peopleResult.data} />
 			</Div>
 		</Section>
 	)

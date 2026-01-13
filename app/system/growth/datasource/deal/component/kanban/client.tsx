@@ -9,9 +9,11 @@ const KanbanClient = dynamic(() => import('@/app/system/growth/datasource/deal/c
 })
 
 type KanbanClientProps = {
-	readonly data : readonly DealByStage[]
+	readonly data    : readonly DealByStage[]
+	readonly account : readonly { id : string, name : string, status : string | null }[]
+	readonly people  : readonly { id : string, name : string }[]
 }
 
-export function KanbanClientWrapper({ data }: KanbanClientProps) {
-	return <KanbanClient data={data} />
+export function KanbanClientWrapper({ data, account, people }: KanbanClientProps) {
+	return <KanbanClient account={account} data={data} people={people} />
 }

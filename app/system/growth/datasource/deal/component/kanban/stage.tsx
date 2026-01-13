@@ -16,6 +16,7 @@ type DroppableStageProps = {
 	readonly total         : number
 	readonly updating      : string | null
 	readonly onStageChange : (dealId: string, newStage: string) => Promise<void>
+	readonly onAddClick    : (stage: string) => void
 }
 
 function formatCurrency(amount: number): string {
@@ -27,10 +28,12 @@ function formatCurrency(amount: number): string {
 	}).format(amount)
 }
 
-export function DroppableStage({ stage, deals, total, updating, onStageChange }: DroppableStageProps) {
+export function DroppableStage({ stage, deals, total, updating, onStageChange, onAddClick }: DroppableStageProps) {
 	const { setNodeRef, isOver } = useDroppable({
 		id: stage,
 	})
+
+	const showAddArea = stage !== 'Won'
 
 	return (
 		<Div
@@ -48,21 +51,24 @@ export function DroppableStage({ stage, deals, total, updating, onStageChange }:
 			</Div>
 
 			<Div className={'flex flex-1 flex-col gap-2 overflow-y-auto p-3'}>
-				{deals.length === 0 ? (
-					<Div className={'flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-100/50 dark:border-zinc-700 dark:bg-zinc-800/30'}>
-						<Span className={'text-sm text-neutral-400 dark:text-neutral-500'}>Drop items here</Span>
+				<SortableContext items={deals.map(deal => deal.id)} strategy={verticalListSortingStrategy}>
+					{deals.map((deal) => (
+						<DealCard
+							key={deal.id}
+							deal={deal}
+							isUpdating={updating === deal.id}
+							onStageChange={onStageChange}
+						/>
+					))}
+				</SortableContext>
+
+				{showAddArea && (
+					<Div
+						className={'flex min-h-[120px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-100/50 transition-colors hover:border-primary-400 hover:bg-primary-50/30 dark:border-zinc-700 dark:bg-zinc-800/30 dark:hover:border-primary-600 dark:hover:bg-primary-950/20'}
+						onClick={() => onAddClick(stage)}
+					>
+						<Span className={'text-sm text-neutral-400 dark:text-neutral-500'}>Click to add item</Span>
 					</Div>
-				) : (
-					<SortableContext items={deals.map(deal => deal.id)} strategy={verticalListSortingStrategy}>
-						{deals.map((deal) => (
-							<DealCard
-								key={deal.id}
-								deal={deal}
-								isUpdating={updating === deal.id}
-								onStageChange={onStageChange}
-							/>
-						))}
-					</SortableContext>
 				)}
 			</Div>
 		</Div>
