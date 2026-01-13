@@ -6,11 +6,15 @@ import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/sch
 import { useRouter } from 'next/navigation'
 import { useState }  from 'react'
 
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+
 import { updateStage } from '@/app/system/growth/datasource/deal/action/mutation'
 import { Div, Span }   from '@/component/canggu/block'
 import { Card }        from '@/component/canggu/card'
 import { Small }       from '@/component/canggu/typography'
 import { DealCard }    from '@/app/system/growth/datasource/deal/component/kanban/card'
+import { DroppableStage } from '@/app/system/growth/datasource/deal/component/kanban/stage'
 
 type KanbanProps = {
 	readonly data : readonly DealByStage[]
@@ -28,6 +32,15 @@ function formatCurrency(amount: number): string {
 export function Kanban({ data }: KanbanProps) {
 	const router = useRouter()
 	const [ updating, setUpdating ] = useState<string | null>(null)
+	const [ activeId, setActiveId ] = useState<string | null>(null)
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8,
+			},
+		})
+	)
 
 	async function handleStageChange(dealId: string, newStage: string) {
 		setUpdating(dealId)
@@ -44,39 +57,78 @@ export function Kanban({ data }: KanbanProps) {
 		}
 	}
 
-	return (
-		<Div className={'flex h-full gap-3 overflow-x-auto p-4'}>
-			{data.map((stageData) => (
-				<Div key={stageData.stage} className={'flex min-w-[280px] flex-col rounded-lg border border-neutral-200 bg-neutral-50/50 dark:border-zinc-800 dark:bg-zinc-900/30'}>
-					<Div className={'shrink-0 border-b border-neutral-200 bg-white/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/50'}>
-						<Div className={'mb-1 flex items-center justify-between'}>
-							<Span className={'text-sm font-semibold text-neutral-900 dark:text-neutral-100'}>{stageData.stage}</Span>
-							<Span className={'rounded-full bg-neutral-200 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:bg-zinc-800 dark:text-zinc-300'}>{stageData.deals.length}</Span>
-						</Div>
-						<Small className={'text-xs font-medium text-neutral-600 dark:text-neutral-400'}>
-							{formatCurrency(stageData.total)}
-						</Small>
-					</Div>
+	function handleDragStart(event: DragStartEvent) {
+		setActiveId(event.active.id as string)
+	}
 
-					<Div className={'flex flex-1 flex-col gap-2 overflow-y-auto p-3'}>
-						{stageData.deals.length === 0 ? (
-							<Div className={'flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-100/50 dark:border-zinc-700 dark:bg-zinc-800/30'}>
-								<Span className={'text-sm text-neutral-400 dark:text-neutral-500'}>Drop items here</Span>
+	async function handleDragEnd(event: DragEndEvent) {
+		const { active, over } = event
+
+		setActiveId(null)
+
+		if (!over) return
+
+		const dealId = active.id as string
+		const newStage = over.id as string
+
+		// Find the current deal to check if stage actually changed
+		let currentDeal: ColumnTable | null = null
+		for (const stageData of data) {
+			const deal = stageData.deals.find(d => d.id === dealId)
+			if (deal) {
+				currentDeal = deal as ColumnTable
+				break
+			}
+		}
+
+		if (!currentDeal || currentDeal.stage === newStage) return
+
+		await handleStageChange(dealId, newStage)
+	}
+
+	const activeDeal = activeId
+		? (() => {
+				for (const stageData of data) {
+					const deal = stageData.deals.find(d => d.id === activeId)
+					if (deal) return deal as ColumnTable & { account : { id : string, name : string } | null }
+				}
+				return null
+			})()
+		: null
+
+	return (
+		<DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+			<Div className={'flex h-full gap-3 overflow-x-auto p-4'}>
+				{data.map((stageData) => (
+					<DroppableStage
+						key={stageData.stage}
+						stage={stageData.stage}
+						deals={stageData.deals}
+						total={stageData.total}
+						updating={updating}
+						onStageChange={handleStageChange}
+					/>
+				))}
+			</Div>
+
+			<DragOverlay>
+				{activeDeal ? (
+					<Card className={'border border-neutral-200 bg-white p-4 shadow-lg opacity-95 dark:border-zinc-700 dark:bg-zinc-950'}>
+						<Div className={'mb-3 flex items-start justify-between'}>
+							<Div className={'flex-1'}>
+								<Span className={'block text-sm leading-tight font-semibold text-neutral-900 dark:text-neutral-100'}>{activeDeal.name}</Span>
+								<Small className={'mt-1 block text-xs text-neutral-500 dark:text-neutral-400'}>{activeDeal.account?.name || 'No Account'}</Small>
 							</Div>
-						) : (
-							stageData.deals.map((deal) => (
-								<DealCard
-									key={deal.id}
-									deal={deal as ColumnTable & { account : { id : string, name : string } | null }}
-									isUpdating={updating === deal.id}
-									onStageChange={handleStageChange}
-								/>
-							))
-						)}
-					</Div>
-				</Div>
-			))}
-		</Div>
+						</Div>
+						<Div className={'mb-3'}>
+							<Span className={'text-sm font-bold text-neutral-900 dark:text-neutral-100'}>
+								{formatCurrency(Number(activeDeal.amount) || 0)}
+							</Span>
+						</Div>
+					</Card>
+				) : null}
+			</DragOverlay>
+		</DndContext>
 	)
 }
 

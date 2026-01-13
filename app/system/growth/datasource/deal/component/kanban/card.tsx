@@ -2,7 +2,9 @@
 
 import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/schema'
 
-import { Edit, Trash2, MoreVertical } from 'lucide-react'
+import { useDraggable }               from '@dnd-kit/core'
+import { CSS }                        from '@dnd-kit/utilities'
+import { Edit, MoreVertical, Trash2 } from 'lucide-react'
 
 import { STAGE_VALUES } from '@/app/system/growth/datasource/deal/action/schema'
 import { Div, Span }    from '@/component/canggu/block'
@@ -48,8 +50,29 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 	const accountName = deal.account?.name || 'No Account'
 	const amount = Number(deal.amount) || 0
 
+	const {
+		attributes,
+		isDragging,
+		listeners,
+		setNodeRef,
+		transform,
+	} = useDraggable({
+		id : deal.id,
+	})
+
+	const style = {
+		opacity   : isDragging ? 0.5 : 1,
+		transform : CSS.Translate.toString(transform),
+	}
+
 	return (
-		<Card className={'border border-neutral-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-700 dark:bg-zinc-950' + (isUpdating ? ' opacity-50' : '')}>
+		<Card
+			{...attributes}
+			{...listeners}
+			className={'cursor-grab border border-neutral-200 bg-white p-4 shadow-sm transition-shadow active:cursor-grabbing hover:shadow-md dark:border-zinc-700 dark:bg-zinc-950 ' + (isUpdating ? ' opacity-50' : '') + (isDragging ? ' ring-2 ring-primary-500' : '')}
+			ref={setNodeRef}
+			style={style}
+		>
 			<Div className={'mb-3 flex items-start justify-between'}>
 				<Div className={'flex-1'}>
 					<Span className={'block text-sm leading-tight font-semibold text-neutral-900 dark:text-neutral-100'}>{deal.name}</Span>
@@ -57,7 +80,17 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 				</Div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button appearance={'ghost'} className={'size-6 p-0'} size={'sm'}>
+						<Button
+							appearance={'ghost'}
+							className={'size-6 p-0'}
+							size={'sm'}
+							onClick={(e) => {
+								e.stopPropagation()
+							}}
+							onPointerDown={(e) => {
+								e.stopPropagation()
+							}}
+						>
 							<MoreVertical className={'size-3.5'} />
 						</Button>
 					</DropdownMenuTrigger>
@@ -88,10 +121,30 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 					{deal.source}
 				</Span>
 				<Div className={'flex gap-1'}>
-					<Button appearance={'ghost'} className={'size-6 p-0'} size={'sm'}>
+					<Button
+						appearance={'ghost'}
+						className={'size-6 p-0'}
+						size={'sm'}
+						onClick={(e) => {
+							e.stopPropagation()
+						}}
+						onPointerDown={(e) => {
+							e.stopPropagation()
+						}}
+					>
 						<Edit className={'size-3'} />
 					</Button>
-					<Button appearance={'ghost'} className={'size-6 p-0 text-red-500 hover:text-red-600'} size={'sm'}>
+					<Button
+						appearance={'ghost'}
+						className={'size-6 p-0 text-red-500 hover:text-red-600'}
+						size={'sm'}
+						onClick={(e) => {
+							e.stopPropagation()
+						}}
+						onPointerDown={(e) => {
+							e.stopPropagation()
+						}}
+					>
 						<Trash2 className={'size-3'} />
 					</Button>
 				</Div>
