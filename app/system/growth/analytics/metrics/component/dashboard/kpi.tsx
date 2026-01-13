@@ -2,8 +2,8 @@
 
 import type { MetricsData } from '@/app/system/growth/analytics/metrics/action/query'
 
-import { ArrowDown, ArrowUp, DollarSign, ShoppingCart, TrendingUp, Users } from 'lucide-react'
-import { motion }                                                          from 'motion/react'
+import { ArrowDown, ArrowUp, Coins, CreditCard, DollarSign, ShoppingCart, Target, TrendingUp, Users } from 'lucide-react'
+import { motion }                                                                                     from 'motion/react'
 
 import { Div, Span } from '@/component/canggu/block'
 import { Card }      from '@/component/canggu/card'
@@ -63,7 +63,14 @@ function formatNumber(value: number): string {
 	return new Intl.NumberFormat('id-ID').format(value)
 }
 
+function formatPercentage(value: number): string {
+	return (value * 100).toFixed(1) + '%'
+}
+
 export function KPICards({ metrics }: { readonly metrics : MetricsData }) {
+	const passedLeadsCount = metrics.leads.filter(lead => lead.status === 'passed').length
+	const conversionRate = metrics.totalLeads > 0 ? passedLeadsCount / metrics.totalLeads : 0
+
 	return (
 		<Div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'}>
 			<KPICard
@@ -85,6 +92,26 @@ export function KPICards({ metrics }: { readonly metrics : MetricsData }) {
 				icon={ShoppingCart}
 				title={'Purchase'}
 				value={formatNumber(metrics.purchase)}
+			/>
+			<KPICard
+				icon={Users}
+				title={'Total Leads'}
+				value={formatNumber(metrics.totalLeads)}
+			/>
+			<KPICard
+				icon={Coins}
+				title={'Total Revenue'}
+				value={formatCurrency(metrics.totalRevenue)}
+			/>
+			<KPICard
+				icon={CreditCard}
+				title={'Total Campaign Cost'}
+				value={formatCurrency(metrics.totalCost)}
+			/>
+			<KPICard
+				icon={Target}
+				title={'Lead Conversion Rate'}
+				value={formatPercentage(conversionRate)}
 			/>
 		</Div>
 	)
