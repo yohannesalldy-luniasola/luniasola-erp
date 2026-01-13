@@ -7,7 +7,7 @@ import { FormProvider }                                                    from 
 import { listByStage }                                                     from '@/app/system/growth/datasource/deal/action/query'
 import { ICON, LABEL, SCHEMA_SEARCH_PARAMS, SCHEMA_SEARCH_PARAMS_INITIAL } from '@/app/system/growth/datasource/deal/action/schema'
 import { FormCreateServer, FormCreateServerFallback }                      from '@/app/system/growth/datasource/deal/component/form/server'
-import { Kanban }                                                          from '@/app/system/growth/datasource/deal/component/kanban'
+import { KanbanClientWrapper }                                             from '@/app/system/growth/datasource/deal/component/kanban/client'
 import { Toolbar, ToolbarFallback }                                        from '@/app/system/growth/datasource/deal/component/toolbar'
 import { Section, Div }                                                    from '@/component/canggu/block'
 import { Separator }                                                       from '@/component/canggu/separator'
@@ -64,7 +64,7 @@ export async function Body({ searchParams }: Page) {
 	return (
 		<Section className={'flex h-full min-h-0 flex-1 flex-col overflow-hidden'}>
 			<Div className={'flex min-h-0 flex-1 flex-col'}>
-				<Kanban data={data} />
+				<KanbanClientWrapper data={data} />
 			</Div>
 		</Section>
 	)
