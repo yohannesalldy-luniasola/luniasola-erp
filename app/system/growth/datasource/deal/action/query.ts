@@ -120,3 +120,35 @@ export const listAccount = cache(async (): Promise<{ data : readonly { id : stri
 
 	return { data : accountsWithStatus as readonly { id : string, name : string, status : string | null }[] }
 })
+
+export const listAvailablePeople = cache(async (): Promise<{ data : readonly { id : string, name : string }[] }> => {
+	const supabase = await server()
+
+	// Fetch all people
+	const { data: people, error: peopleError } = await supabase
+		.from('people')
+		.select('id, name')
+		.order('name', { ascending : true })
+
+	if (peopleError || !people || people.length === 0)
+		return { data : [] }
+
+	// Fetch all people already linked to any account
+	const { data: accountPeople, error: accountPeopleError } = await supabase
+		.from('account_people')
+		.select('people')
+
+	if (accountPeopleError)
+		return { data : people as readonly { id : string, name : string }[] }
+
+	const usedPeopleIds = new Set<string>()
+
+	accountPeople?.forEach((row: any) => {
+		if (row.people)
+			usedPeopleIds.add(row.people as string)
+	})
+
+	const availablePeople = (people as readonly { id : string, name : string }[]).filter((person) => !usedPeopleIds.has(person.id))
+
+	return { data : availablePeople }
+})

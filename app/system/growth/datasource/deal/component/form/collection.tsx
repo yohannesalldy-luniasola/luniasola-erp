@@ -2,10 +2,14 @@
 
 import type { Action, Schema } from '@/app/system/growth/datasource/deal/action/schema'
 
-import { Building2, DollarSign, Tag } from 'lucide-react'
+import Link from 'next/link'
+
+import { useState } from 'react'
+
+import { Building2, DollarSign, Tag, UserRound, X } from 'lucide-react'
 
 import { LABEL, SOURCE_VALUES, STAGE_VALUES }                                                             from '@/app/system/growth/datasource/deal/action/schema'
-import { Span }                                                                                           from '@/component/canggu/block'
+import { Div, Span }                                                                                      from '@/component/canggu/block'
 import { Fieldset, Label, Input, Message, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/component/canggu/form'
 import { Separator }                                                                                      from '@/component/canggu/separator'
 
@@ -15,11 +19,30 @@ type FormCollection = {
 	readonly id             : string
 	readonly provision?     : boolean
 	readonly account        : readonly { id : string, name : string, status : string | null }[]
+	readonly people         : readonly { id : string, name : string }[]
 }
 
-export function FormCollection({ state, defaultValues, id, provision = false, account }: FormCollection) {
+export function FormCollection({ state, defaultValues, id, provision = false, account, people }: FormCollection) {
 	const errors = state?.status === 'error' ? state.errors ?? {} : {}
 	const values = state?.status === 'error' ? state.inputs ?? defaultValues ?? {} : defaultValues ?? {}
+
+	const [ accountValue, setAccountValue ] = useState<string | undefined>(values.account)
+	const [ peopleValue, setPeopleValue ]   = useState<string | undefined>(undefined)
+
+	const isAccountDisabled = !!peopleValue
+	const isPeopleDisabled  = !!accountValue
+
+	const handleClearAccount = (e: React.MouseEvent) => {
+		e.stopPropagation()
+		setAccountValue(undefined)
+		setPeopleValue(undefined)
+	}
+
+	const handleClearPeople = (e: React.MouseEvent) => {
+		e.stopPropagation()
+		setAccountValue(undefined)
+		setPeopleValue(undefined)
+	}
 
 	return (
 		<>
@@ -33,43 +56,109 @@ export function FormCollection({ state, defaultValues, id, provision = false, ac
 			</Fieldset>
 
 			<Fieldset>
-				<Label htmlFor={'account'}>Account</Label>
-				<Select defaultValue={values.account} name={'account'}>
-					<SelectTrigger id={'account'}>
-						<SelectValue placeholder={'Select an Account'} />
-					</SelectTrigger>
+				<Label className={'flex items-center gap-2'} htmlFor={'account'}>
+					Account
+					<Link className={'text-2xs text-primary hover:underline'} href={'/system/growth/datasource/people'}>
+						(for unassigned contact please set through People page)
+					</Link>
+				</Label>
+				<Div className={'relative'}>
+					<Select
+						disabled={isAccountDisabled}
+						key={`account-${accountValue || 'empty'}`}
+						name={isAccountDisabled ? undefined : 'account'}
+						value={accountValue}
+						onValueChange={(value) => {
+							setAccountValue(value)
+							setPeopleValue(undefined)
+						}}
+					>
+						<SelectTrigger aria-disabled={isAccountDisabled} className={'pr-8'} id={'account'}>
+							<SelectValue placeholder={'Select an Account'} />
+						</SelectTrigger>
 
-					<SelectContent align={'start'} position={'popper'} sideOffset={5}>
-						{account.map((acc) => {
-							const isPassed   = acc.status === 'passed'
-							const isSelected = values.account === acc.id
+						<SelectContent align={'start'} position={'popper'} sideOffset={5}>
+							{account.map((acc) => {
+								const isPassed = acc.status === 'passed'
 
-							return (
-								<SelectItem disabled={!isPassed && !isSelected} key={acc.id} value={acc.id}>
-									<Span className={'flex items-center justify-between gap-3'}>
-										<Span className={'flex items-center gap-2'}>
-											<Building2 className={'size-3.5'} />
-											{acc.name}
+								return (
+									<SelectItem disabled={!isPassed} key={acc.id} value={acc.id}>
+										<Span className={'flex items-center justify-between gap-3'}>
+											<Span className={'flex items-center gap-2'}>
+												<Building2 className={'size-3.5'} />
+												{acc.name}
+											</Span>
+
+											<Span
+												className={
+													'rounded-full px-2 py-0.5 text-2xs font-semibold ' +
+													(acc.status === 'passed'
+														? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+														: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500')
+												}
+											>
+												{acc.status ?? 'Contact Unassigned'}
+											</Span>
 										</Span>
-
-										<Span
-											className={
-												'rounded-full px-2 py-0.5 text-2xs font-semibold ' +
-												(acc.status === 'passed'
-													? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-													: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500')
-											}
-										>
-											{acc.status ?? 'Unknown'}
-										</Span>
-									</Span>
-								</SelectItem>
-							)
-						})}
-					</SelectContent>
-				</Select>
+									</SelectItem>
+								)
+							})}
+						</SelectContent>
+					</Select>
+					{accountValue && (
+						<button
+							className={'absolute top-1/2 right-2 z-10 flex -translate-y-1/2 items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-neutral-300 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none'}
+							type={'button'}
+							onClick={handleClearAccount}
+						>
+							<X className={'size-3.5'} />
+							<span className={'sr-only'}>Clear selection</span>
+						</button>
+					)}
+				</Div>
 
 				{errors.account && <Message>{errors.account[0]}</Message>}
+			</Fieldset>
+
+			<Fieldset>
+				<Label htmlFor={'people'}>Contact Person</Label>
+				<Div className={'relative'}>
+					<Select
+						disabled={isPeopleDisabled}
+						key={`people-${peopleValue || 'empty'}`}
+						name={isPeopleDisabled ? undefined : 'people'}
+						value={peopleValue}
+						onValueChange={(value) => {
+							setPeopleValue(value)
+							setAccountValue(undefined)
+						}}
+					>
+						<SelectTrigger aria-disabled={isPeopleDisabled} className={'pr-8'} id={'people'}>
+							<SelectValue placeholder={'Select a Contact Person'} />
+						</SelectTrigger>
+
+						<SelectContent align={'start'} position={'popper'} sideOffset={5}>
+							{people.map((person) => (
+								<SelectItem key={person.id} value={person.id}>
+									<Span className={'flex items-center gap-2'}>
+										<UserRound className={'size-3.5'} />
+										{person.name}
+									</Span>
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					{peopleValue && (
+						<button
+							className={'absolute top-1/2 right-2 z-10 flex -translate-y-1/2 items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-neutral-300 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none'}
+							type={'button'}
+							onClick={handleClearPeople}
+						>
+							<X className={'size-3.5'} />
+							<span className={'sr-only'}>Clear selection</span>
+						</button>
+					)}
+				</Div>
 			</Fieldset>
 
 			<Fieldset>

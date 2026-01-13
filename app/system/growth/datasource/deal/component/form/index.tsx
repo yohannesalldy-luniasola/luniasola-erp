@@ -13,9 +13,10 @@ import { Keyboard }          from '@/component/canggu/keyboard'
 
 type FormCreate = {
 	readonly account : readonly { id : string, name : string, status : string | null }[]
+	readonly people  : readonly { id : string, name : string }[]
 }
 
-export function FormCreate({ account }: FormCreate) {
+export function FormCreate({ account, people }: FormCreate) {
 	const form = useForm()
 
 	const Trigger = (
@@ -26,7 +27,7 @@ export function FormCreate({ account }: FormCreate) {
 
 	return (
 		<Form action={insert} className={'w-3xl'} defaultOpen={form.create.open} icon={ICON} label={LABEL} mode={'create'} path={PATH} trigger={Trigger} onOpenChange={form.create.setOpen}>
-			{({ state }) => <FormCollection account={account} defaultValues={{}} id={'form-create'} provision={false} state={state} />}
+			{({ state }) => <FormCollection account={account} defaultValues={{}} id={'form-create'} people={people} provision={false} state={state} />}
 		</Form>
 	)
 }
