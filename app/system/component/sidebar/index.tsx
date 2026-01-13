@@ -176,6 +176,11 @@ const MENU: readonly DepartmentMenu[] = [
 								path  : '/system/growth/datasource/deal',
 								label : 'Deal',
 							},
+							{
+								icon  : Wallet,
+								path  : '/system/growth/datasource/direct',
+								label : 'Direct Purchase',
+							},
 						],
 					},
 				],

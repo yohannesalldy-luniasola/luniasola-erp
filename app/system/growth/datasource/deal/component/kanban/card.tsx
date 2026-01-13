@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation'
 
 import { useState, Suspense } from 'react'
 
-import { useDraggable }               from '@dnd-kit/core'
-import { CSS }                        from '@dnd-kit/utilities'
-import { Edit, MoreVertical, Trash2 } from 'lucide-react'
-import { toast }                      from 'sonner'
+import { useDraggable }                      from '@dnd-kit/core'
+import { CSS }                               from '@dnd-kit/utilities'
+import { CheckCircle, MoreVertical, Trash2 } from 'lucide-react'
+import { toast }                             from 'sonner'
 
 import { remove }           from '@/app/system/growth/datasource/deal/action/mutation'
 import { STAGE_VALUES }     from '@/app/system/growth/datasource/deal/action/schema'
@@ -38,7 +38,7 @@ import { Small } from '@/component/canggu/typography'
 type DealCardProps = {
 	readonly deal          : ColumnTable & { account : { id : string, name : string } | null }
 	readonly isUpdating?   : boolean
-	readonly onStageChange : (dealId: string, newStage: string) => Promise<void>
+	readonly onStageChange : (dealId: string, newStage: string, showToast?: boolean) => Promise<void>
 }
 
 function formatCurrency(amount: number): string {
@@ -68,6 +68,8 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 	const [ editOpen, setEditOpen ] = useState(false)
 	const [ deleteOpen, setDeleteOpen ] = useState(false)
 	const [ deleting, setDeleting ] = useState(false)
+	const [ wonConfirmOpen, setWonConfirmOpen ] = useState(false)
+	const [ pendingStage, setPendingStage ] = useState<string | null>(null)
 
 	const accountName = deal.account?.name || 'No Account'
 	const amount = Number(deal.amount) || 0
@@ -115,6 +117,23 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 		}
 	}
 
+	function handleStageChangeClick(stage: string) {
+		if (stage === 'Won') {
+			setPendingStage(stage)
+			setWonConfirmOpen(true)
+		} else {
+			onStageChange(deal.id, stage, false)
+		}
+	}
+
+	async function handleConfirmWon() {
+		if (!pendingStage) return
+
+		setWonConfirmOpen(false)
+		await onStageChange(deal.id, pendingStage, true)
+		setPendingStage(null)
+	}
+
 	return (
 		<Card
 			{...attributes}
@@ -150,7 +169,7 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 								<DropdownMenuItem
 									disabled={isUpdating}
 									key={stage}
-									onClick={() => onStageChange(deal.id, stage)}
+									onClick={() => handleStageChangeClick(stage)}
 								>
 									Move to {stage}
 								</DropdownMenuItem>
@@ -216,6 +235,33 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 					/>
 				</Suspense>
 			)}
+
+			<DialogAlert open={wonConfirmOpen} onOpenChange={setWonConfirmOpen}>
+				<DialogAlertContent className={'sm:max-w-md'} overlay={true}>
+					<DialogAlertHeader>
+						<DialogAlertTitle>
+							<CheckCircle className={'text-emerald-500'} strokeWidth={2.500} /> Move to Won Stage
+						</DialogAlertTitle>
+						<DialogAlertDescription>
+							Are you sure you want to change the stage status to &quot;Won&quot;? This action will sync the data with Google.
+						</DialogAlertDescription>
+					</DialogAlertHeader>
+
+					<DialogAlertFooter>
+						<DialogAlertCancel asChild>
+							<Button appearance={'ghost'} className={'font-normal'} shape={'ellipse'} size={'sm'} type={'button'} onClick={() => setPendingStage(null)}>
+								Cancel
+							</Button>
+						</DialogAlertCancel>
+
+						<DialogAlertAction asChild>
+							<Button appearance={'primary'} shape={'ellipse'} size={'sm'} type={'button'} onClick={handleConfirmWon}>
+								Confirm
+							</Button>
+						</DialogAlertAction>
+					</DialogAlertFooter>
+				</DialogAlertContent>
+			</DialogAlert>
 
 			<DialogAlert open={deleteOpen} onOpenChange={setDeleteOpen}>
 				<DialogAlertContent className={'sm:max-w-md'} overlay={true}>

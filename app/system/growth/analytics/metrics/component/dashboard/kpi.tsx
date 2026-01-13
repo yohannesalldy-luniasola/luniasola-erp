@@ -72,47 +72,61 @@ export function KPICards({ metrics }: { readonly metrics : MetricsData }) {
 	const conversionRate = metrics.totalLeads > 0 ? passedLeadsCount / metrics.totalLeads : 0
 
 	return (
-		<Div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'}>
-			<KPICard
-				icon={Users}
-				title={'Cost per Lead (CPL)'}
-				value={formatCurrency(metrics.cpl)}
-			/>
-			<KPICard
-				icon={TrendingUp}
-				title={'Customer Acquisition Cost (CAC)'}
-				value={formatCurrency(metrics.cac)}
-			/>
-			<KPICard
-				icon={DollarSign}
-				title={'Return on Ad Spend (ROAS)'}
-				value={metrics.roas.toFixed(2) + 'x'}
-			/>
-			<KPICard
-				icon={ShoppingCart}
-				title={'Purchase'}
-				value={formatNumber(metrics.purchase)}
-			/>
-			<KPICard
-				icon={Users}
-				title={'Total Leads'}
-				value={formatNumber(metrics.totalLeads)}
-			/>
-			<KPICard
-				icon={Coins}
-				title={'Total Revenue'}
-				value={formatCurrency(metrics.totalRevenue)}
-			/>
-			<KPICard
-				icon={CreditCard}
-				title={'Total Campaign Cost'}
-				value={formatCurrency(metrics.totalCost)}
-			/>
-			<KPICard
-				icon={Target}
-				title={'Lead Conversion Rate'}
-				value={formatPercentage(conversionRate)}
-			/>
+		<Div className={'flex flex-col gap-6'}>
+			<Div className={'flex flex-col gap-4'}>
+				<Div className={'flex items-center gap-2'}>
+					<Span className={'text-lg font-semibold text-neutral-900 dark:text-neutral-100'}>Global KPI Achievement</Span>
+				</Div>
+				<Div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'}>
+					<KPICard
+						icon={Users}
+						title={'Cost per Lead (CPL)'}
+						value={formatCurrency(metrics.cpl)}
+					/>
+					<KPICard
+						icon={DollarSign}
+						title={'Return on Ad Spend (ROAS)'}
+						value={metrics.roas.toFixed(2) + 'x'}
+					/>
+					{/* <KPICard
+						icon={Users}
+						title={'Total Leads'}
+						value={formatNumber(metrics.totalLeads)}
+					/> */}
+					<KPICard
+						icon={CreditCard}
+						title={'Total Campaign Cost'}
+						value={formatCurrency(metrics.totalCost)}
+					/>
+					<KPICard
+						icon={Target}
+						title={'Lead Conversion Rate'}
+						value={formatPercentage(conversionRate)}
+					/>
+				</Div>
+			</Div>
+			<Div className={'flex flex-col gap-4'}>
+				<Div className={'flex items-center gap-2'}>
+					<Span className={'text-lg font-semibold text-neutral-900 dark:text-neutral-100'}>Deal Stage Metrics</Span>
+				</Div>
+				<Div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'}>
+					<KPICard
+						icon={TrendingUp}
+						title={'Customer Acquisition Cost (CAC)'}
+						value={formatCurrency(metrics.cac)}
+					/>
+					<KPICard
+						icon={Coins}
+						title={'Total Revenue'}
+						value={formatCurrency(metrics.totalRevenue)}
+					/>
+					<KPICard
+						icon={ShoppingCart}
+						title={'Purchase'}
+						value={formatNumber(metrics.purchase)}
+					/>
+				</Div>
+			</Div>
 		</Div>
 	)
 }

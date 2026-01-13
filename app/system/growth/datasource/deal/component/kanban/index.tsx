@@ -8,13 +8,26 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { CheckCircle }                                                                                 from 'lucide-react'
+import { toast }                                                                                       from 'sonner'
 
 import { updateStage }     from '@/app/system/growth/datasource/deal/action/mutation'
 import { STAGE_VALUES }    from '@/app/system/growth/datasource/deal/action/schema'
 import { FormCreateStage } from '@/app/system/growth/datasource/deal/component/kanban/form'
 import { DroppableStage }  from '@/app/system/growth/datasource/deal/component/kanban/stage'
 import { Div, Span }       from '@/component/canggu/block'
+import { Button }          from '@/component/canggu/button'
 import { Card }            from '@/component/canggu/card'
+import {
+	DialogAlert,
+	DialogAlertAction,
+	DialogAlertCancel,
+	DialogAlertContent,
+	DialogAlertDescription,
+	DialogAlertFooter,
+	DialogAlertHeader,
+	DialogAlertTitle,
+}                                                                                                      from '@/component/canggu/dialog'
 import { Small }           from '@/component/canggu/typography'
 
 type KanbanProps = {
@@ -38,6 +51,8 @@ export function Kanban({ data, account, people }: KanbanProps) {
 	const [ activeId, setActiveId ] = useState<string | null>(null)
 	const [ selectedStage, setSelectedStage ] = useState<typeof STAGE_VALUES[number] | null>(null)
 	const [ formOpen, setFormOpen ] = useState(false)
+	const [ wonConfirmOpen, setWonConfirmOpen ] = useState(false)
+	const [ pendingWonChange, setPendingWonChange ] = useState<{ dealId: string, newStage: string } | null>(null)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -60,19 +75,58 @@ export function Kanban({ data, account, people }: KanbanProps) {
 		}
 	}
 
-	async function handleStageChange(dealId: string, newStage: string) {
+	async function handleStageChange(dealId: string, newStage: string, showToast = false) {
 		setUpdating(dealId)
+
+		let toastId: string | number | null = null
+
+		if (showToast && newStage === 'Won') {
+			toastId = toast.loading('Sending data to Google...', {
+				description : 'Updating deal status and syncing with Google',
+				duration    : Infinity,
+			})
+		}
 
 		try {
 			const result = await updateStage(dealId, newStage)
 
-			if (result.status === 'success')
+			if (result.status === 'success') {
+				if (toastId) {
+					toast.success('Status updated successfully', {
+						description : 'Deal status has been synced with Google',
+						id          : toastId,
+					})
+				}
+
 				router.refresh()
+			} else if (result.status === 'error') {
+				if (toastId) {
+					toast.error('Update failed', {
+						description : result.message || 'Failed to sync with Google',
+						id          : toastId,
+					})
+				}
+			}
 		} catch (error) {
 			console.error('Failed to update stage:', error)
+
+			if (toastId) {
+				toast.error('Update failed', {
+					description : 'Failed to sync with Google',
+					id          : toastId,
+				})
+			}
 		} finally {
 			setUpdating(null)
 		}
+	}
+
+	async function handleConfirmWon() {
+		if (!pendingWonChange) return
+
+		setWonConfirmOpen(false)
+		await handleStageChange(pendingWonChange.dealId, pendingWonChange.newStage, true)
+		setPendingWonChange(null)
 	}
 
 	function handleDragStart(event: DragStartEvent) {
@@ -101,7 +155,13 @@ export function Kanban({ data, account, people }: KanbanProps) {
 
 		if (!currentDeal || currentDeal.stage === newStage) return
 
-		await handleStageChange(dealId, newStage)
+		// Check if moving to "Won" stage
+		if (newStage === 'Won') {
+			setPendingWonChange({ dealId, newStage })
+			setWonConfirmOpen(true)
+		} else {
+			await handleStageChange(dealId, newStage)
+		}
 	}
 
 	const activeDeal = activeId
@@ -160,6 +220,33 @@ export function Kanban({ data, account, people }: KanbanProps) {
 				people={people}
 				onOpenChange={handleFormClose}
 			/>
+
+			<DialogAlert open={wonConfirmOpen} onOpenChange={setWonConfirmOpen}>
+				<DialogAlertContent className={'sm:max-w-md'} overlay={true}>
+					<DialogAlertHeader>
+						<DialogAlertTitle>
+							<CheckCircle className={'text-emerald-500'} strokeWidth={2.500} /> Move to Won Stage
+						</DialogAlertTitle>
+						<DialogAlertDescription>
+							Are you sure you want to change the stage status to &quot;Won&quot;? This action will sync the data with Google.
+						</DialogAlertDescription>
+					</DialogAlertHeader>
+
+					<DialogAlertFooter>
+						<DialogAlertCancel asChild>
+							<Button appearance={'ghost'} className={'font-normal'} shape={'ellipse'} size={'sm'} type={'button'} onClick={() => setPendingWonChange(null)}>
+								Cancel
+							</Button>
+						</DialogAlertCancel>
+
+						<DialogAlertAction asChild>
+							<Button appearance={'primary'} shape={'ellipse'} size={'sm'} type={'button'} onClick={handleConfirmWon}>
+								Confirm
+							</Button>
+						</DialogAlertAction>
+					</DialogAlertFooter>
+				</DialogAlertContent>
+			</DialogAlert>
 		</>
 	)
 }

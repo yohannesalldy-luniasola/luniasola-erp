@@ -80,6 +80,7 @@ export function Table({ channel, leads }: { readonly channel? : string, readonly
 							<TableHead>GCLID</TableHead>
 							<TableHead>FBCLID</TableHead>
 							<TableHead>Lead Status</TableHead>
+							<TableHead>Stage</TableHead>
 							<TableHead>Date</TableHead>
 							<TableHead className={'text-right'}>Action</TableHead>
 						</TableRow>
@@ -87,7 +88,7 @@ export function Table({ channel, leads }: { readonly channel? : string, readonly
 					<TableBody>
 						{filteredLeads.length === 0 ? (
 							<TableRow>
-								<TableCell className={'text-center text-neutral-500'} colSpan={6}>
+								<TableCell className={'text-center text-neutral-500'} colSpan={7}>
 									No leads found
 								</TableCell>
 							</TableRow>
@@ -108,6 +109,9 @@ export function Table({ channel, leads }: { readonly channel? : string, readonly
 											<Span className={classNames('size-2 rounded-full', getStatusColor(lead.status))} />
 											<ExtraSmall className={'font-semibold text-inherit! capitalize'}>{lead.status}</ExtraSmall>
 										</Badge>
+									</TableCell>
+									<TableCell>
+										<Small className={'text-neutral-500'}>{lead.stage || '-'}</Small>
 									</TableCell>
 									<TableCell>
 										<Small className={'text-neutral-500'}>{formatDate(lead.created_at)}</Small>
