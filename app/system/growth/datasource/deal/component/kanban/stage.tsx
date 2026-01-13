@@ -2,21 +2,22 @@
 
 import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/schema'
 
-import { useDroppable } from '@dnd-kit/core'
+import { useDroppable }                              from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import { Div, Span } from '@/component/canggu/block'
-import { Card }      from '@/component/canggu/card'
-import { Small }     from '@/component/canggu/typography'
-import { DealCard }  from '@/app/system/growth/datasource/deal/component/kanban/card'
+import { STAGE_VALUES } from '@/app/system/growth/datasource/deal/action/schema'
+import { DealCard }     from '@/app/system/growth/datasource/deal/component/kanban/card'
+import { Div, Span }    from '@/component/canggu/block'
+import { Card }         from '@/component/canggu/card'
+import { Small }        from '@/component/canggu/typography'
 
 type DroppableStageProps = {
-	readonly stage         : string
+	readonly stage         : typeof STAGE_VALUES[number]
 	readonly deals         : readonly (ColumnTable & { account : { id : string, name : string } | null })[]
 	readonly total         : number
 	readonly updating      : string | null
 	readonly onStageChange : (dealId: string, newStage: string) => Promise<void>
-	readonly onAddClick    : (stage: string) => void
+	readonly onAddClick    : (stage: typeof STAGE_VALUES[number]) => void
 }
 
 function formatCurrency(amount: number): string {

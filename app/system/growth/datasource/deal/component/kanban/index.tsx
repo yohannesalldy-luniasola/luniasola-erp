@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 
 import { updateStage }     from '@/app/system/growth/datasource/deal/action/mutation'
+import { STAGE_VALUES }    from '@/app/system/growth/datasource/deal/action/schema'
 import { FormCreateStage } from '@/app/system/growth/datasource/deal/component/kanban/form'
 import { DroppableStage }  from '@/app/system/growth/datasource/deal/component/kanban/stage'
 import { Div, Span }       from '@/component/canggu/block'
@@ -35,7 +36,7 @@ export function Kanban({ data, account, people }: KanbanProps) {
 	const router = useRouter()
 	const [ updating, setUpdating ] = useState<string | null>(null)
 	const [ activeId, setActiveId ] = useState<string | null>(null)
-	const [ selectedStage, setSelectedStage ] = useState<string | null>(null)
+	const [ selectedStage, setSelectedStage ] = useState<typeof STAGE_VALUES[number] | null>(null)
 	const [ formOpen, setFormOpen ] = useState(false)
 
 	const sensors = useSensors(
@@ -46,7 +47,7 @@ export function Kanban({ data, account, people }: KanbanProps) {
 		}),
 	)
 
-	function handleAddClick(stage: string) {
+	function handleAddClick(stage: typeof STAGE_VALUES[number]) {
 		setSelectedStage(stage)
 		setFormOpen(true)
 	}

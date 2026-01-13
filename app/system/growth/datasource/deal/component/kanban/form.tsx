@@ -1,14 +1,14 @@
 'use client'
 
-import type { Action } from '@/app/system/growth/datasource/deal/action/schema'
+import type { Action, Schema } from '@/app/system/growth/datasource/deal/action/schema'
 
-import { Form }              from '@/app/system/component/form'
-import { insert }            from '@/app/system/growth/datasource/deal/action/mutation'
-import { ICON, LABEL, PATH } from '@/app/system/growth/datasource/deal/action/schema'
-import { FormCollection }    from '@/app/system/growth/datasource/deal/component/form/collection'
+import { Form }                            from '@/app/system/component/form'
+import { insert }                          from '@/app/system/growth/datasource/deal/action/mutation'
+import { ICON, LABEL, PATH, STAGE_VALUES } from '@/app/system/growth/datasource/deal/action/schema'
+import { FormCollection }                  from '@/app/system/growth/datasource/deal/component/form/collection'
 
 type FormCreateStageProps = {
-	readonly defaultStage : string | null
+	readonly defaultStage : typeof STAGE_VALUES[number] | null
 	readonly open         : boolean
 	readonly onOpenChange : (open: boolean) => void
 	readonly account      : readonly { id : string, name : string, status : string | null }[]
@@ -16,7 +16,7 @@ type FormCreateStageProps = {
 }
 
 export function FormCreateStage({ defaultStage, open, onOpenChange, account, people }: FormCreateStageProps) {
-	const defaultValues = defaultStage ? { stage : defaultStage } : {}
+	const defaultValues: Partial<Schema> = defaultStage ? { stage : defaultStage } : {}
 
 	return (
 		<Form

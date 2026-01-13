@@ -1,11 +1,12 @@
 import { listAccount, listAvailablePeople } from '@/app/system/growth/datasource/deal/action/query'
-import { FormCreateStage }                   from '@/app/system/growth/datasource/deal/component/kanban/form'
-import { Skeleton }                          from '@/component/canggu/skeleton'
+import { STAGE_VALUES }                     from '@/app/system/growth/datasource/deal/action/schema'
+import { FormCreateStage }                  from '@/app/system/growth/datasource/deal/component/kanban/form'
+import { Skeleton }                         from '@/component/canggu/skeleton'
 
 type FormCreateStageServerProps = {
-	readonly defaultStage  : string | null
-	readonly open          : boolean
-	readonly onOpenChange  : (open: boolean) => void
+	readonly defaultStage : typeof STAGE_VALUES[number] | null
+	readonly open         : boolean
+	readonly onOpenChange : (open: boolean) => void
 }
 
 export async function FormCreateStageServer({ defaultStage, open, onOpenChange }: FormCreateStageServerProps) {
@@ -26,4 +27,3 @@ export async function FormCreateStageServer({ defaultStage, open, onOpenChange }
 export function FormCreateStageServerFallback() {
 	return <Skeleton className={'h-8 w-23'} />
 }
-
