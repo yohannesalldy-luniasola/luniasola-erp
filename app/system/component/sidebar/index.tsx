@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation'
 
 import { useState, useMemo } from 'react'
 
-import { DatabaseZap, Flag, Activity, Info, UserRound, ChevronRight, ChevronsUpDown, Lock, Radio, BadgeDollarSign, BarChart3, ChartArea, Megaphone, FileText, Wallet } from 'lucide-react'
-import { motion, AnimatePresence }                                                                                                                                     from 'motion/react'
-import useSWR                                                                                                                                                          from 'swr'
+import { DatabaseZap, Flag, Activity, Info, UserRound, ChevronRight, ChevronsUpDown, Lock, Radio, BadgeDollarSign, BarChart3, ChartArea, Megaphone, FileText, Wallet, Handshake } from 'lucide-react'
+import { motion, AnimatePresence }                                                                                                                                                from 'motion/react'
+import useSWR                                                                                                                                                                     from 'swr'
 
 import { Span, SVG, G, Path }                                                                                                                                                                                                                                                                                         from '@/component/canggu/block'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger }                                                                                                                                                                                                                                                        from '@/component/canggu/collapsible'
@@ -170,6 +170,11 @@ const MENU: readonly DepartmentMenu[] = [
 								icon  : BadgeDollarSign,
 								path  : '/system/growth/datasource/lead',
 								label : 'Lead',
+							},
+							{
+								icon  : Handshake,
+								path  : '/system/growth/datasource/deal',
+								label : 'Deal',
 							},
 						],
 					},
