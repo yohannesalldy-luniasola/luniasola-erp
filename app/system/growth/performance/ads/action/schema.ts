@@ -86,7 +86,7 @@ export const TABLE_COLUMN_INITIAL = Object.fromEntries(TABLE_COLUMNS.map((column
 export const TABLE_COLUMN_LABELS  = Object.fromEntries(TABLE_COLUMNS.map((column) => [ column.key, column.label ])) 			 	  as Record<Column, string>
 
 export const SCHEMA = z.object({
-	channel               : z.enum([ 'Google Ads', 'Meta Ads' ], { message : 'Channel is a mandatory field' }),
+	channel               : z.enum([ 'google', 'facebook' ], 'Channel is a mandatory field'),
 	date                  : z.string().min(1, 'Date is a mandatory field').refine((value) => /^\d{4}-\d{2}-\d{2}$/.test(value), { message : 'Date format is malformed' }),
 	cost                  : numberSchema({ field : 'Cost', mandatory : false,	min : 0,  max : 10000000.00 }).nullable(),
 	lead                  : numberSchema({ field : 'Incoming Lead', mandatory : true, min : 0, max : 32767 }),

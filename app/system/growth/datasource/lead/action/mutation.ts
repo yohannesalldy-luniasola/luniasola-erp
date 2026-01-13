@@ -25,7 +25,7 @@ export async function insert(_: Action, formData: FormData): Promise<Action> {
 
 	try {
 		const supabase = await server()
-        
+		
 		const { error } = await supabase.from(TABLE).insert({
 			name   : validation.data.name,
 			gclid  : validation.data.gclid,
@@ -85,7 +85,7 @@ export async function update(_: Action, formData: FormData): Promise<Action> {
 
 	try {
 		const supabase = await server()
-        
+		
 		const { data, error } = await supabase.from(TABLE).update({
 			name   : validation.data.name,
 			gclid  : validation.data.gclid,

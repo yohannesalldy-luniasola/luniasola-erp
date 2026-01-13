@@ -1,17 +1,28 @@
 import type { SearchParams } from '@/type/next'
 import type { ReactNode }    from 'react'
 
-import { Section, Div } from '@/component/canggu/block'
-import { Separator }    from '@/component/canggu/separator'
-import { Paragraph }    from '@/component/canggu/typography'
+import { Suspense } from 'react'
 
-import { ICON, LABEL } from '@/app/system/growth/datasource/deal/action/schema'
+import { FormProvider }                                                    from '@/app/system/component/form'
+import { listByStage }                                                     from '@/app/system/growth/datasource/deal/action/query'
+import { ICON, LABEL, SCHEMA_SEARCH_PARAMS, SCHEMA_SEARCH_PARAMS_INITIAL } from '@/app/system/growth/datasource/deal/action/schema'
+import { FormCreateServer, FormCreateServerFallback }                      from '@/app/system/growth/datasource/deal/component/form/server'
+import { Kanban }                                                          from '@/app/system/growth/datasource/deal/component/kanban'
+import { Toolbar, ToolbarFallback }                                        from '@/app/system/growth/datasource/deal/component/toolbar'
+import { Section, Div }                                                    from '@/component/canggu/block'
+import { Separator }                                                       from '@/component/canggu/separator'
+import { Paragraph }                                                       from '@/component/canggu/typography'
+import { parse }                                                           from '@/component/utility/parameter'
 
 type Page 	 = { readonly searchParams : SearchParams }
 type Context = { readonly children : ReactNode }
 
 export function Context({ children }: Context) {
-	return <>{children}</>
+	return (
+		<FormProvider>
+			{children}
+		</FormProvider>
+	)
 }
 
 export async function Header({ searchParams }: Page) {
@@ -24,6 +35,16 @@ export async function Header({ searchParams }: Page) {
 					</Paragraph>
 
 					<Separator className={'-mr-0.5 data-[orientation=vertical]:h-4'} orientation={'vertical'} />
+
+					<Suspense fallback={<ToolbarFallback />}>
+						<Toolbar searchParams={searchParams} />
+					</Suspense>
+				</Div>
+
+				<Div className={'flex flex-row items-center gap-2'}>
+					<Suspense fallback={<FormCreateServerFallback />}>
+						<FormCreateServer />
+					</Suspense>
 				</Div>
 			</Div>
 		</Section>
@@ -31,10 +52,19 @@ export async function Header({ searchParams }: Page) {
 }
 
 export async function Body({ searchParams }: Page) {
+	const parameter = await parse(searchParams, SCHEMA_SEARCH_PARAMS, SCHEMA_SEARCH_PARAMS_INITIAL)
+	const resolvedSearchParams = await searchParams
+	const filters = {
+		stage   : parameter.stage,
+		source  : resolvedSearchParams.source as string | undefined,
+		account : resolvedSearchParams.account as string | undefined,
+	}
+	const data = await listByStage(filters)
+
 	return (
 		<Section className={'flex h-full min-h-0 flex-1 flex-col overflow-hidden'}>
-			<Div className={'flex min-h-0 flex-1 flex-col items-center justify-center'}>
-				<Paragraph className={'text-sm text-neutral-500'}>Deal page is under development</Paragraph>
+			<Div className={'flex min-h-0 flex-1 flex-col'}>
+				<Kanban data={data} />
 			</Div>
 		</Section>
 	)
@@ -49,4 +79,3 @@ export function BodyFallback() {
 		</Div>
 	)
 }
-
