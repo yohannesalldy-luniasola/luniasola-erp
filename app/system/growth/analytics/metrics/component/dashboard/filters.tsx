@@ -19,7 +19,6 @@ export function Filters({ params }: { readonly params : SchemaSearchParam }) {
 	
 	const [ dateFrom, setDateFrom ] = useState<string>(params.dateFrom || '')
 	const [ dateTo, setDateTo ] = useState<string>(params.dateTo || '')
-	const [ campaign, setCampaign ] = useState<string>(params.campaign || '')
 	const [ channel, setChannel ] = useState<string>(params.channel || 'all')
 
 	const handleFilter = useCallback(() => {
@@ -35,23 +34,17 @@ export function Filters({ params }: { readonly params : SchemaSearchParam }) {
 		else
 			newParams.delete('dateTo')
 
-		if (campaign)
-			newParams.set('campaign', campaign)
-		else
-			newParams.delete('campaign')
-
 		if (channel && channel !== 'all')
 			newParams.set('channel', channel)
 		else
 			newParams.delete('channel')
 
 		router.push('?' + newParams.toString())
-	}, [ dateFrom, dateTo, campaign, channel, router, searchParams ])
+	}, [ dateFrom, dateTo, channel, router, searchParams ])
 
 	const handleClear = useCallback(() => {
 		setDateFrom('')
 		setDateTo('')
-		setCampaign('')
 		setChannel('all')
 		router.push('/system/growth/analytics/metrics')
 	}, [ router ])
@@ -63,7 +56,7 @@ export function Filters({ params }: { readonly params : SchemaSearchParam }) {
 				<Span className={'text-sm font-semibold'}>Filters</Span>
 			</Div>
 
-			<Div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'}>
+			<Div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'}>
 				<Fieldset>
 					<Label htmlFor={'dateFrom'}>Date From</Label>
 					<Input
@@ -81,17 +74,6 @@ export function Filters({ params }: { readonly params : SchemaSearchParam }) {
 						type={'date'}
 						value={dateTo}
 						onChange={(e) => setDateTo(e.target.value)}
-					/>
-				</Fieldset>
-
-				<Fieldset>
-					<Label htmlFor={'campaign'}>Campaign</Label>
-					<Input
-						id={'campaign'}
-						placeholder={'Filter by campaign'}
-						type={'text'}
-						value={campaign}
-						onChange={(e) => setCampaign(e.target.value)}
 					/>
 				</Fieldset>
 

@@ -79,7 +79,7 @@ export function Table({ channel, leads }: { readonly channel? : string, readonly
 							<TableHead>Name</TableHead>
 							<TableHead>GCLID</TableHead>
 							<TableHead>FBCLID</TableHead>
-							<TableHead>Status</TableHead>
+							<TableHead>Lead Status</TableHead>
 							<TableHead>Date</TableHead>
 							<TableHead className={'text-right'}>Action</TableHead>
 						</TableRow>
