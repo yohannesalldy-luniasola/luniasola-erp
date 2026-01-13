@@ -9,11 +9,11 @@ import { Div, Span } from '@/component/canggu/block'
 import { Card }      from '@/component/canggu/card'
 
 type KPICardProps = {
-	readonly title    : string
-	readonly value    : string | number
-	readonly icon     : React.ComponentType<{ className? : string }>
-	readonly trend?   : 'up' | 'down' | 'neutral'
-	readonly trendValue?: string
+	readonly title       : string
+	readonly value       : string | number
+	readonly icon        : React.ComponentType<{ className? : string }>
+	readonly trend?      : 'up' | 'down' | 'neutral'
+	readonly trendValue? : string
 }
 
 function KPICard({ title, value, icon: Icon, trend, trendValue }: KPICardProps) {
@@ -52,8 +52,8 @@ function KPICard({ title, value, icon: Icon, trend, trendValue }: KPICardProps) 
 
 function formatCurrency(value: number): string {
 	return new Intl.NumberFormat('id-ID', {
-		style    : 'currency',
-		currency : 'IDR',
+		style                 : 'currency',
+		currency              : 'IDR',
 		minimumFractionDigits : 0,
 		maximumFractionDigits : 0,
 	}).format(value)
@@ -89,4 +89,3 @@ export function KPICards({ metrics }: { readonly metrics : MetricsData }) {
 		</Div>
 	)
 }
-

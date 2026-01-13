@@ -88,7 +88,7 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 			const dateFromIndonesia = dateFrom + 'T00:00:00+07:00'
 			const dateFromUTC = new Date(dateFromIndonesia)
 			const dateFromStart = dateFromUTC.toISOString()
-			dealsQuery = dealsQuery.gte('created_at', dateFromStart)
+			dealsQuery = dealsQuery.gte('date_creation', dateFromStart)
 		}
 
 		if (dateTo) {
@@ -96,7 +96,7 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 			const dateToNextDayUTC = new Date(dateToNextDayIndonesia)
 			dateToNextDayUTC.setUTCDate(dateToNextDayUTC.getUTCDate() + 1)
 			const dateToEnd = dateToNextDayUTC.toISOString()
-			dealsQuery = dealsQuery.lt('created_at', dateToEnd)
+			dealsQuery = dealsQuery.lt('date_creation', dateToEnd)
 		}
 
 		const { data: dealsData } = await dealsQuery
@@ -105,9 +105,68 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 		deals = []
 	}
 
+	// Fetch won deals for CAC calculation
+	let wonDealsQuery = supabase.from('deal').select('amount, date_creation').eq('stage', 'Won')
+
+	if (dateFrom) {
+		const dateFromIndonesia = dateFrom + 'T00:00:00+07:00'
+		const dateFromUTC = new Date(dateFromIndonesia)
+		const dateFromStart = dateFromUTC.toISOString()
+		wonDealsQuery = wonDealsQuery.gte('date_creation', dateFromStart)
+	}
+
+	if (dateTo) {
+		const dateToNextDayIndonesia = dateTo + 'T00:00:00+07:00'
+		const dateToNextDayUTC = new Date(dateToNextDayIndonesia)
+		dateToNextDayUTC.setUTCDate(dateToNextDayUTC.getUTCDate() + 1)
+		const dateToEnd = dateToNextDayUTC.toISOString()
+		wonDealsQuery = wonDealsQuery.lt('date_creation', dateToEnd)
+	}
+
+	const { data: wonDealsData, error: wonDealsError } = await wonDealsQuery
+
+	if (wonDealsError)
+		throw new Error('Failed to fetch won deals: ' + wonDealsError.message)
+
+	const wonDealsCount = (wonDealsData ?? []).length
+
+	// Fetch total cost from ads_performance table
+	let adsQuery = supabase.from('ads_performance').select('cost, date_creation, date')
+
+	if (dateFrom) {
+		const dateFromIndonesia = dateFrom + 'T00:00:00+07:00'
+		const dateFromUTC = new Date(dateFromIndonesia)
+		const dateFromStart = dateFromUTC.toISOString()
+		adsQuery = adsQuery.gte('date_creation', dateFromStart)
+	}
+
+	if (dateTo) {
+		const dateToNextDayIndonesia = dateTo + 'T00:00:00+07:00'
+		const dateToNextDayUTC = new Date(dateToNextDayIndonesia)
+		dateToNextDayUTC.setUTCDate(dateToNextDayUTC.getUTCDate() + 1)
+		const dateToEnd = dateToNextDayUTC.toISOString()
+		adsQuery = adsQuery.lt('date_creation', dateToEnd)
+	}
+
+	if (channel && channel !== 'all') {
+		adsQuery = adsQuery.eq('channel', channel)
+	}
+
+	const { data: adsData, error: adsError } = await adsQuery
+
+	if (adsError)
+		throw new Error('Failed to fetch ads performance: ' + adsError.message)
+
+	const totalCost = (adsData ?? []).reduce((sum: number, ad: any) => sum + (Number(ad.cost) || 0), 0)
+
+	// Count leads with 'passed' status (already filtered by date above)
+	const passedLeadsCount = leads.filter(lead => lead.status === 'passed').length
+
 	const totalLeads = leads.length
 	const totalDeals = deals.length
-	const totalRevenue = deals.reduce((sum, deal) => sum + (deal.revenue || 0), 0)
+	
+	// Calculate total revenue from won deals (sum of amount from deals with stage 'Won')
+	const totalRevenue = (wonDealsData ?? []).reduce((sum: number, deal: any) => sum + (Number(deal.amount) || 0), 0)
 	
 	const campaigns = leads.map(lead => ({
 		campaign : lead.gclid || lead.fbclid || 'Unknown',
@@ -115,12 +174,10 @@ export const getMetrics = cache(async (params: SchemaSearchParam): Promise<Metri
 		date     : lead.created_at,
 	}))
 
-	const totalCost = campaigns.reduce((sum, c) => sum + c.cost, 0)
-
-	const cpl = totalLeads > 0 && totalCost > 0 ? totalCost / totalLeads : 0
-	const cac = totalDeals > 0 && totalCost > 0 ? totalCost / totalDeals : 0
+	const cpl = passedLeadsCount > 0 && totalCost > 0 ? totalCost / passedLeadsCount : 0
+	const cac = wonDealsCount > 0 && totalCost > 0 ? totalCost / wonDealsCount : 0
 	const roas = totalCost > 0 ? totalRevenue / totalCost : 0
-	const purchase = totalDeals
+	const purchase = wonDealsCount
 
 	return {
 		leads,
