@@ -7,6 +7,7 @@ import { FormProvider }                                                    from 
 import { listByStage }                                                     from '@/app/system/growth/datasource/deal/action/query'
 import { ICON, LABEL, SCHEMA_SEARCH_PARAMS, SCHEMA_SEARCH_PARAMS_INITIAL } from '@/app/system/growth/datasource/deal/action/schema'
 import { FormCreateServer, FormCreateServerFallback }                      from '@/app/system/growth/datasource/deal/component/form/server'
+import { HistoryButton }                                                   from '@/app/system/growth/datasource/deal/component/history'
 import { KanbanClientWrapper }                                             from '@/app/system/growth/datasource/deal/component/kanban/client'
 import { Toolbar, ToolbarFallback }                                        from '@/app/system/growth/datasource/deal/component/toolbar'
 import { Section, Div }                                                    from '@/component/canggu/block'
@@ -42,6 +43,7 @@ export async function Header({ searchParams }: Page) {
 				</Div>
 
 				<Div className={'flex flex-row items-center gap-2'}>
+					<HistoryButton />
 					<Suspense fallback={<FormCreateServerFallback />}>
 						<FormCreateServer />
 					</Suspense>

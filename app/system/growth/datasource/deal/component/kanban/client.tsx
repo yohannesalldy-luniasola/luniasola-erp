@@ -1,6 +1,6 @@
 'use client'
 
-import type { DealByStage } from '@/app/system/growth/datasource/deal/action/query'
+import type { DealByStage } from '@/app/system/growth/datasource/deal/action/schema'
 
 import dynamic from 'next/dynamic'
 

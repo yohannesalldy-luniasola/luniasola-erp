@@ -2,14 +2,31 @@
 
 import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/schema'
 
+import { useRouter } from 'next/navigation'
+
+import { useState, Suspense } from 'react'
+
 import { useDraggable }               from '@dnd-kit/core'
 import { CSS }                        from '@dnd-kit/utilities'
 import { Edit, MoreVertical, Trash2 } from 'lucide-react'
+import { toast }                      from 'sonner'
 
-import { STAGE_VALUES } from '@/app/system/growth/datasource/deal/action/schema'
-import { Div, Span }    from '@/component/canggu/block'
-import { Button }       from '@/component/canggu/button'
-import { Card }         from '@/component/canggu/card'
+import { remove }           from '@/app/system/growth/datasource/deal/action/mutation'
+import { STAGE_VALUES }     from '@/app/system/growth/datasource/deal/action/schema'
+import { FormUpdateServer } from '@/app/system/growth/datasource/deal/component/form/server'
+import { Div, Span }        from '@/component/canggu/block'
+import { Button }           from '@/component/canggu/button'
+import { Card }             from '@/component/canggu/card'
+import {
+	DialogAlert,
+	DialogAlertAction,
+	DialogAlertCancel,
+	DialogAlertContent,
+	DialogAlertDescription,
+	DialogAlertFooter,
+	DialogAlertHeader,
+	DialogAlertTitle,
+}                                                                                           from '@/component/canggu/dialog'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -47,6 +64,11 @@ function getSourceColor(source: string): string {
 }
 
 export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
+	const router = useRouter()
+	const [ editOpen, setEditOpen ] = useState(false)
+	const [ deleteOpen, setDeleteOpen ] = useState(false)
+	const [ deleting, setDeleting ] = useState(false)
+
 	const accountName = deal.account?.name || 'No Account'
 	const amount = Number(deal.amount) || 0
 
@@ -63,6 +85,34 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 	const style = {
 		opacity   : isDragging ? 0.5 : 1,
 		transform : CSS.Translate.toString(transform),
+	}
+
+	const handleUpdate = async (id: string, data: Partial<ColumnTable>) => {
+		// This is called before the form submission completes
+		// The form will handle the actual update
+		void id
+		void data
+	}
+
+	async function handleDelete() {
+		setDeleting(true)
+
+		try {
+			const result = await remove(deal.id)
+
+			if (result.status === 'success') {
+				toast.success(result.message)
+				setDeleteOpen(false)
+				router.refresh()
+			} else if (result.status === 'error') {
+				toast.error(result.message)
+			}
+		} catch (error) {
+			toast.error('Failed to delete deal')
+			console.error('Failed to delete deal:', error)
+		} finally {
+			setDeleting(false)
+		}
 	}
 
 	return (
@@ -127,6 +177,7 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 						size={'sm'}
 						onClick={(e) => {
 							e.stopPropagation()
+							setEditOpen(true)
 						}}
 						onPointerDown={(e) => {
 							e.stopPropagation()
@@ -140,6 +191,7 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 						size={'sm'}
 						onClick={(e) => {
 							e.stopPropagation()
+							setDeleteOpen(true)
 						}}
 						onPointerDown={(e) => {
 							e.stopPropagation()
@@ -149,6 +201,44 @@ export function DealCard({ deal, isUpdating, onStageChange }: DealCardProps) {
 					</Button>
 				</Div>
 			</Div>
+
+			{editOpen && (
+				<Suspense fallback={null} key={deal.id + '-edit-' + editOpen}>
+					<FormUpdateServer
+						data={deal}
+						open={editOpen}
+						onOpenChange={(open) => {
+							setEditOpen(open)
+							if (!open)
+								router.refresh()
+						}}
+						onUpdate={handleUpdate}
+					/>
+				</Suspense>
+			)}
+
+			<DialogAlert open={deleteOpen} onOpenChange={setDeleteOpen}>
+				<DialogAlertContent className={'sm:max-w-md'} overlay={true}>
+					<DialogAlertHeader>
+						<DialogAlertTitle>
+							<Trash2 className={'text-red-500'} strokeWidth={2.500} /> Remove Deal
+						</DialogAlertTitle>
+						<DialogAlertDescription>This action is permanent and cannot be reversed</DialogAlertDescription>
+					</DialogAlertHeader>
+
+					<DialogAlertFooter>
+						<DialogAlertCancel asChild>
+							<Button appearance={'ghost'} className={'font-normal'} shape={'ellipse'} size={'sm'} type={'button'}>Cancel</Button>
+						</DialogAlertCancel>
+
+						<DialogAlertAction asChild>
+							<Button appearance={'destructive'} disabled={deleting} shape={'ellipse'} size={'sm'} type={'button'} onClick={handleDelete}>
+								{deleting ? 'Removing...' : 'Remove'}
+							</Button>
+						</DialogAlertAction>
+					</DialogAlertFooter>
+				</DialogAlertContent>
+			</DialogAlert>
 		</Card>
 	)
 }

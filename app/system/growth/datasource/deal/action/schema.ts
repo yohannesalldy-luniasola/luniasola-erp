@@ -10,6 +10,12 @@ export type Action            = SchemaAction<Schema>
 export type Error			  = Record<string, string[]>
 export type ColumnTable 	  = Readonly<Schema> & SupabaseSystemColumn
 
+export type DealByStage = {
+	readonly stage : typeof STAGE_VALUES[number]
+	readonly deals : readonly (ColumnTable & { account : { id : string, name : string } | null })[]
+	readonly total : number
+}
+
 export const ICON		          = Handshake
 export const LABEL		          = 'Deal' 	   					   as const 
 export const PATH  		          = '/system/growth/datasource/deal' as const 

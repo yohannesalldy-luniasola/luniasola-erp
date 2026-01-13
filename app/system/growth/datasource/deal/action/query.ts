@@ -1,17 +1,9 @@
-import 'server-only'
-
 import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/schema'
 
 import { cache } from 'react'
 
-import { TABLE, STAGE_VALUES } from '@/app/system/growth/datasource/deal/action/schema'
-import { server }             from '@/library/supabase/server'
-
-export type DealByStage = {
-	readonly stage : typeof STAGE_VALUES[number]
-	readonly deals : readonly (ColumnTable & { account : { id : string, name : string } | null })[]
-	readonly total  : number
-}
+import { TABLE, type DealByStage } from '@/app/system/growth/datasource/deal/action/schema'
+import { server }                  from '@/library/supabase/server'
 
 const DISPLAY_STAGES = [ 'Discovery', 'Proposal', 'Negotiation', 'Administration', 'Won' ] as const
 
@@ -151,4 +143,24 @@ export const listAvailablePeople = cache(async (): Promise<{ data : readonly { i
 	const availablePeople = (people as readonly { id : string, name : string }[]).filter((person) => !usedPeopleIds.has(person.id))
 
 	return { data : availablePeople }
+})
+
+export const listLost = cache(async (): Promise<{ data : readonly (ColumnTable & { account : { id : string, name : string } | null })[] }> => {
+	const supabase = await server()
+
+	const { data, error } = await supabase
+		.from(TABLE)
+		.select('*, account(id, name)')
+		.eq('stage', 'Lost')
+		.order('date_creation', { ascending : false })
+
+	if (error)
+		throw new Error('Failed to fetch lost deals: ' + error.message)
+
+	const deals = (data ?? []).map((deal: any) => ({
+		...deal,
+		account : Array.isArray(deal.account) ? deal.account[0] || null : deal.account || null,
+	})) as readonly (ColumnTable & { account : { id : string, name : string } | null })[]
+
+	return { data : deals }
 })

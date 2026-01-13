@@ -117,3 +117,111 @@ export async function updateStage(id: string, stage: string): Promise<Action> {
 		}
 	}
 }
+
+export async function update(_: Action, formData: FormData): Promise<Action> {
+	const timestamp  = Date.now()
+	const payload 	 = Object.fromEntries(formData)
+	const id         = payload.id as string
+	const validation = SCHEMA.safeParse(payload)
+
+	if (!id || typeof id !== 'string')
+		return {
+			status  : 'error',
+			message : LABEL + ' ' + 'identification is missing or invalid',
+			timestamp,
+		}
+
+	if (!validation.success)
+		return {
+			status  : 'error',
+			message : LABEL + ' ' + 'form validation was unsuccessful',
+			errors  : flattenError(validation.error).fieldErrors,
+			inputs  : payload as unknown as Partial<Schema>,
+			timestamp,
+		}
+
+	try {
+		const supabase = await server()
+
+		const { data, error } = await supabase
+			.from(TABLE)
+			.update({
+				name       : validation.data.name,
+				account    : validation.data.account,
+				amount     : validation.data.amount,
+				source     : validation.data.source,
+				stage      : validation.data.stage,
+				date_update : new Date().toISOString(),
+			})
+			.eq('id', id)
+			.select()
+
+		if (error)
+			throw error
+
+		if (!data || data.length === 0)
+			throw new Error('Deal not found')
+
+		revalidatePath(PATH)
+
+		return {
+			status  : 'success',
+			message : LABEL + ' ' + 'update was completed successfully',
+			timestamp,
+		}
+	} catch (error) {
+		let message = LABEL + ' ' + 'update was unsuccessful'
+
+		if (error instanceof Error)
+			message = error.message
+		else if (typeof error === 'object' && error !== null && 'message' in error)
+			message = String((error as { message : unknown }).message)
+		
+		return {
+			status  : 'error',
+			message : message,
+			timestamp,
+		}
+	}
+}
+
+export async function remove(id: string): Promise<Action> {
+	const timestamp = Date.now()
+
+	if (!id || typeof id !== 'string')
+		return {
+			status  : 'error',
+			message : LABEL + ' ' + 'identification is missing or invalid',
+			timestamp,
+		}
+
+	try {
+		const supabase = await server()
+
+		const { error } = await supabase.from(TABLE).delete().eq('id', id)
+
+		if (error)
+			throw error
+
+		revalidatePath(PATH)
+
+		return {
+			status  : 'success',
+			message : LABEL + ' ' + 'removal was completed successfully',
+			timestamp,
+		}
+	} catch (error) {
+		let message = LABEL + ' ' + 'removal was unsuccessful'
+
+		if (error instanceof Error)
+			message = error.message
+		else if (typeof error === 'object' && error !== null && 'message' in error)
+			message = String((error as { message : unknown }).message)
+		
+		return {
+			status  : 'error',
+			message : message,
+			timestamp,
+		}
+	}
+}
