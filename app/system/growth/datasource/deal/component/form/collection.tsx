@@ -2,19 +2,19 @@
 
 import type { Action, Schema } from '@/app/system/growth/datasource/deal/action/schema'
 
-import { Building2, DollarSign, Tag, Workflow } from 'lucide-react'
+import { Building2, DollarSign, Tag } from 'lucide-react'
 
-import { LABEL, SOURCE_VALUES, STAGE_VALUES }                                                                     from '@/app/system/growth/datasource/deal/action/schema'
-import { Span }                                                                      from '@/component/canggu/block'
+import { LABEL, SOURCE_VALUES, STAGE_VALUES }                                                             from '@/app/system/growth/datasource/deal/action/schema'
+import { Span }                                                                                           from '@/component/canggu/block'
 import { Fieldset, Label, Input, Message, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/component/canggu/form'
-import { Separator }                                                                 from '@/component/canggu/separator'
+import { Separator }                                                                                      from '@/component/canggu/separator'
 
 type FormCollection = {
 	readonly state          : Action
 	readonly defaultValues? : Partial<Schema>
 	readonly id             : string
 	readonly provision?     : boolean
-	readonly account        : readonly { id : string, name : string }[]
+	readonly account        : readonly { id : string, name : string, status : string | null }[]
 }
 
 export function FormCollection({ state, defaultValues, id, provision = false, account }: FormCollection) {
@@ -40,14 +40,32 @@ export function FormCollection({ state, defaultValues, id, provision = false, ac
 					</SelectTrigger>
 
 					<SelectContent align={'start'} position={'popper'} sideOffset={5}>
-						{account.map((acc) => (
-							<SelectItem key={acc.id} value={acc.id}>
-								<Span className={'flex items-center gap-2'}>
-									<Building2 className={'size-3.5'} />
-									{acc.name}
-								</Span>
-							</SelectItem>
-						))}
+						{account.map((acc) => {
+							const isPassed   = acc.status === 'passed'
+							const isSelected = values.account === acc.id
+
+							return (
+								<SelectItem disabled={!isPassed && !isSelected} key={acc.id} value={acc.id}>
+									<Span className={'flex items-center justify-between gap-3'}>
+										<Span className={'flex items-center gap-2'}>
+											<Building2 className={'size-3.5'} />
+											{acc.name}
+										</Span>
+
+										<Span
+											className={
+												'rounded-full px-2 py-0.5 text-2xs font-semibold ' +
+												(acc.status === 'passed'
+													? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+													: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500')
+											}
+										>
+											{acc.status ?? 'Unknown'}
+										</Span>
+									</Span>
+								</SelectItem>
+							)
+						})}
 					</SelectContent>
 				</Select>
 
@@ -103,4 +121,3 @@ export function FormCollection({ state, defaultValues, id, provision = false, ac
 		</>
 	)
 }
-

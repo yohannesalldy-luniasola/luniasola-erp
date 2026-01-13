@@ -12,7 +12,7 @@ import { Button }            from '@/component/canggu/button'
 import { Keyboard }          from '@/component/canggu/keyboard'
 
 type FormCreate = {
-	readonly account : readonly { id : string, name : string }[]
+	readonly account : readonly { id : string, name : string, status : string | null }[]
 }
 
 export function FormCreate({ account }: FormCreate) {

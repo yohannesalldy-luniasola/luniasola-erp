@@ -16,7 +16,7 @@ export const PATH  		          = '/system/growth/datasource/deal' as const
 export const TABLE                = 'deal' 		 	 	 	 	   as const
 
 export const STAGE_VALUES = [ 'Discovery', 'Proposal', 'Negotiation', 'Administration', 'Won', 'Lost' ] as const
-export const SOURCE_VALUES = [ 'Upwork', 'Google Ads', 'Referral' ] as const
+export const SOURCE_VALUES = [ 'Upwork', 'Google Ads', 'Referral', 'Meta Ads' ] as const
 
 export const SCHEMA = z.object({
 	name    : z.string().min(1, 'Name is a mandatory field').max(255),

@@ -15,7 +15,7 @@ import { Fieldset, Label, Select, SelectContent, SelectItem, SelectTrigger, Sele
 
 type ToolbarFilterProps = {
 	readonly params : SchemaSearchParam
-	readonly account : readonly { id : string, name : string }[]
+	readonly account : readonly { id : string, name : string, status : string | null }[]
 }
 
 export function ToolbarFilter({ params, account }: ToolbarFilterProps) {

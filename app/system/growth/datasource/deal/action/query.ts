@@ -56,13 +56,67 @@ export const listByStage = cache(async (filters?: { stage? : string, source? : s
 	return dealsByStage
 })
 
-export const listAccount = cache(async (): Promise<{ data : readonly { id : string, name : string }[] }> => {
+export const listAccount = cache(async (): Promise<{ data : readonly { id : string, name : string, status : string | null }[] }> => {
 	const supabase = await server()
 	
-	const { data, error } = await supabase.from('account').select('id, name').order('name', { ascending : true })
+	// Get all accounts
+	const { data: accounts, error: accountsError } = await supabase
+		.from('account')
+		.select('id, name')
+		.order('name', { ascending : true })
 
-	if (error)
+	if (accountsError)
 		return { data : [] }
 
-	return { data : (data ?? []) as readonly { id : string, name : string }[] }
+	if (!accounts || accounts.length === 0)
+		return { data : [] }
+
+	// Get all leads with their status
+	const { data: leads, error: leadsError } = await supabase
+		.from('lead')
+		.select('name, status')
+
+	if (leadsError)
+		return { data : accounts.map(acc => ({ ...acc, status : null })) }
+
+	// Get all people associated with accounts through account_people junction table
+	const { data: accountPeople, error: accountPeopleError } = await supabase
+		.from('account_people')
+		.select('account, people(id, name)')
+
+	if (accountPeopleError)
+		return { data : accounts.map(acc => ({ ...acc, status : null })) }
+
+	// Create a map: account_id -> array of people names
+	const accountToPeopleMap = new Map<string, string[]>()
+	
+	accountPeople?.forEach((ap: any) => {
+		const accountId = ap.account
+		const peopleName = ap.people?.name
+		
+		if (accountId && peopleName) {
+			const existing = accountToPeopleMap.get(accountId) || []
+			accountToPeopleMap.set(accountId, [ ...existing, peopleName ])
+		}
+	})
+
+	// For each account, find the lead status by matching people names with lead names
+	const accountsWithStatus = accounts.map((account: any) => {
+		const peopleNames = accountToPeopleMap.get(account.id) || []
+		
+		// Find leads where the lead name matches any of the people names associated with this account
+		const relatedLeads = leads?.filter(lead => peopleNames.includes(lead.name)) || []
+		
+		// If any related lead has status 'passed', use 'passed', otherwise use the first lead's status or null
+		const hasPassed = relatedLeads.some(lead => lead.status === 'passed')
+		const leadStatus = hasPassed ? 'passed' : (relatedLeads[0]?.status || null)
+		
+		return {
+			id     : account.id,
+			name   : account.name,
+			status : leadStatus,
+		}
+	})
+
+	return { data : accountsWithStatus as readonly { id : string, name : string, status : string | null }[] }
 })

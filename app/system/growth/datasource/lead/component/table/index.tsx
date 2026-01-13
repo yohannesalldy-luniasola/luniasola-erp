@@ -46,7 +46,7 @@ export function Table({ data }: { readonly data : readonly ColumnTable[] }) {
 				return (
 					<Div className={'flex flex-row items-center gap-2.5'}>
 						<Link className={'size-3.5'} />
-						<Small>{column.gclid ?? '-'}</Small>
+						<Small>{column.gclid && column.gclid !== '' ? column.gclid : '-'}</Small>
 					</Div>
 				)
 
@@ -54,7 +54,7 @@ export function Table({ data }: { readonly data : readonly ColumnTable[] }) {
 				return (
 					<Div className={'flex flex-row items-center gap-2.5'}>
 						<Link className={'size-3.5'} />
-						<Small>{column.fbclid ?? '-'}</Small>
+						<Small>{column.fbclid && column.fbclid !== '' ? column.fbclid : '-'}</Small>
 					</Div>
 				)
 
