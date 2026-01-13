@@ -18,7 +18,7 @@ export async function Dashboard({ params }: { readonly params : SchemaSearchPara
 
 			{/* <Charts metrics={metrics} /> */}
 
-			<Table leads={metrics.leads} />
+			<Table channel={params.channel} leads={metrics.leads} />
 		</Div>
 	)
 }

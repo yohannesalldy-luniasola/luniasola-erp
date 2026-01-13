@@ -104,7 +104,7 @@ export function Filters({ params }: { readonly params : SchemaSearchParam }) {
 						<SelectContent>
 							<SelectItem value={'all'}>All Channels</SelectItem>
 							<SelectItem value={'google'}>Google</SelectItem>
-							<SelectItem value={'facebook'}>Facebook</SelectItem>
+							<SelectItem value={'facebook'}>Facebook (Meta Ads)</SelectItem>
 						</SelectContent>
 					</Select>
 				</Fieldset>

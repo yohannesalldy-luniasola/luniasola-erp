@@ -1,21 +1,48 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
-import { Loader2, Mail, Menu, Phone, User } from 'lucide-react'
-import { motion }                           from 'motion/react'
+import { Loader2, Mail, Phone, User } from 'lucide-react'
+import { motion }                     from 'motion/react'
 
-import { submitConsult }                            from '@/app/consult/action'
-import { A, Div, Header, Main, Nav, Section, Span } from '@/component/canggu/block'
-import { Button }                                   from '@/component/canggu/button'
-import { Fieldset, Form, Input, Label, Message }    from '@/component/canggu/form'
+import { submitConsult }                         from '@/app/consult/action'
+import { Div, Main, Section, Span }              from '@/component/canggu/block'
+import { Button }                                from '@/component/canggu/button'
+import { Fieldset, Form, Input, Label, Message } from '@/component/canggu/form'
+
+function createId(): string {
+	const random = Math.random().toString(36).slice(2, 10)
+	const time   = Date.now().toString(36)
+
+	return random + time
+}
 
 function ConsultFormContent() {
+	const router       = useRouter()
+	const pathname     = usePathname()
 	const searchParams = useSearchParams()
 	const [ submitting, setSubmitting ] = useState(false)
 	const [ errors, setErrors ] = useState<{ name? : string, contact? : string }>({})
+
+	useEffect(() => {
+		const current = new URLSearchParams(searchParams.toString())
+		const generateGclid = Math.random() < 0.5
+
+		if (generateGclid) {
+			current.set('gclid', createId())
+			current.delete('fbclid')
+		} else {
+			current.set('fbclid', createId())
+			current.delete('gclid')
+		}
+
+		const query = current.toString()
+
+		router.replace(query ? pathname + '?' + query : pathname)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	function validateForm(name: string, contact: string): boolean {
 		const newErrors: { name? : string, contact? : string } = {}
@@ -51,12 +78,15 @@ function ConsultFormContent() {
 		setSubmitting(true)
 
 		try {
+			const finalGclid  = gclid || null
+			const finalFbclid = gclid ? null : (fbclid || null)
+
 			await submitConsult({ 
 				name, 
 				contact, 
 				company : company || undefined,
-				gclid   : gclid || null,
-				fbclid  : fbclid || null,
+				gclid   : finalGclid,
+				fbclid  : finalFbclid,
 			})
 		} catch (error) {
 			console.error('Failed to save consultation data:', error)
@@ -66,7 +96,7 @@ function ConsultFormContent() {
 		}
 
 		const gclidValue  = gclid || ''
-		const fbclidValue = fbclid || ''
+		const fbclidValue = gclid ? '' : (fbclid || '')
 
 		let message = 'Hello! I would like to request a free consultation.\n\n'
 		message += 'Consultation Request\n\n'
@@ -92,26 +122,7 @@ function ConsultFormContent() {
 
 	return (
 		<Main className={'min-h-dvh bg-gradient-to-br from-purple-50 via-white to-blue-50'}>
-			<Header className={'flex shrink-0 items-center justify-between border-b border-neutral-200 bg-white/80 p-4 backdrop-blur-sm md:px-6 lg:px-8'}>
-				<Nav className={'flex items-center gap-2'}>
-					<Div className={'flex size-10 items-center justify-center rounded-md bg-blue-900 text-white'}>
-						<Span className={'text-lg font-bold'}>L</Span>
-					</Div>
-					<Span className={'text-lg font-semibold text-blue-900'}>Luniasola</Span>
-				</Nav>
-
-				<Nav className={'hidden items-center gap-6 md:flex'}>
-					<A className={'text-sm text-blue-900 hover:text-blue-950'} href={'https://luniasola.com/id-id/about?region=id'}>
-						About Us
-					</A>
-				</Nav>
-
-				<Button appearance={'ghost'} className={'md:hidden'} icon={true} shape={'square'}>
-					<Menu className={'size-5'} />
-				</Button>
-			</Header>
-
-			<Section className={'flex min-h-[calc(100dvh-80px)] items-center justify-center px-4 py-16 md:px-6 lg:px-8'}>
+			<Section className={'flex min-h-dvh items-center justify-center px-4 py-16 md:px-6 lg:px-8'}>
 				<Div className={'mx-auto w-full max-w-md'}>
 					<motion.div
 						animate={{ opacity : 1, y : 0 }}
@@ -329,26 +340,7 @@ export default function Consult() {
 	return (
 		<Suspense fallback={
 			<Main className={'min-h-dvh bg-gradient-to-br from-purple-50 via-white to-blue-50'}>
-				<Header className={'flex shrink-0 items-center justify-between border-b border-neutral-200 bg-white/80 p-4 backdrop-blur-sm md:px-6 lg:px-8'}>
-					<Nav className={'flex items-center gap-2'}>
-						<Div className={'flex size-10 items-center justify-center rounded-md bg-blue-900 text-white'}>
-							<Span className={'text-lg font-bold'}>L</Span>
-						</Div>
-						<Span className={'text-lg font-semibold text-blue-900'}>Luniasola</Span>
-					</Nav>
-
-					<Nav className={'hidden items-center gap-6 md:flex'}>
-						<A className={'text-sm text-blue-900 hover:text-blue-950'} href={'https://luniasola.com/id-id/about?region=id'}>
-							About Us
-						</A>
-					</Nav>
-
-					<Button appearance={'ghost'} className={'md:hidden'} icon={true} shape={'square'}>
-						<Menu className={'size-5'} />
-					</Button>
-				</Header>
-
-				<Section className={'flex min-h-[calc(100dvh-80px)] items-center justify-center px-4 py-16 md:px-6 lg:px-8'}>
+				<Section className={'flex min-h-dvh items-center justify-center px-4 py-16 md:px-6 lg:px-8'}>
 					<Div className={'mx-auto w-full max-w-md'}>
 						<motion.div
 							animate={{ opacity : 1, y : 0 }}

@@ -51,10 +51,20 @@ function openWhatsApp(gclid: string | null, fbclid: string | null, name: string)
 	window.open(whatsappUrl, '_blank')
 }
 
-export function Table({ leads }: { readonly leads : readonly LeadMetric[] }) {
+export function Table({ channel, leads }: { readonly channel? : string, readonly leads : readonly LeadMetric[] }) {
 	const handleLeadClick = useCallback((lead: LeadMetric) => {
 		openWhatsApp(lead.gclid, lead.fbclid, lead.name)
 	}, [])
+
+	const filteredLeads = leads.filter((lead) => {
+		if (channel === 'google')
+			return lead.gclid !== null && lead.gclid !== ''
+		
+		if (channel === 'facebook')
+			return lead.fbclid !== null && lead.fbclid !== ''
+		
+		return true
+	})
 
 	return (
 		<Card className={'p-4'}>
@@ -75,14 +85,14 @@ export function Table({ leads }: { readonly leads : readonly LeadMetric[] }) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{leads.length === 0 ? (
+						{filteredLeads.length === 0 ? (
 							<TableRow>
 								<TableCell className={'text-center text-neutral-500'} colSpan={6}>
 									No leads found
 								</TableCell>
 							</TableRow>
 						) : (
-							leads.map((lead) => (
+							filteredLeads.map((lead) => (
 								<TableRow className={'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900'} key={lead.id} onClick={() => handleLeadClick(lead)}>
 									<TableCell>
 										<Span className={'font-medium'}>{lead.name}</Span>
