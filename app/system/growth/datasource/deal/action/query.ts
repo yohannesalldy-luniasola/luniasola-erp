@@ -9,7 +9,7 @@ import { server }             from '@/library/supabase/server'
 
 export type DealByStage = {
 	readonly stage : typeof STAGE_VALUES[number]
-	readonly deals : readonly ColumnTable[]
+	readonly deals : readonly (ColumnTable & { account : { id : string, name : string } | null })[]
 	readonly total  : number
 }
 

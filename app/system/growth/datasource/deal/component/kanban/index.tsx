@@ -4,17 +4,16 @@ import type { DealByStage } from '@/app/system/growth/datasource/deal/action/que
 import type { ColumnTable } from '@/app/system/growth/datasource/deal/action/schema'
 
 import { useRouter } from 'next/navigation'
-import { useState }  from 'react'
+
+import { useState } from 'react'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import { updateStage } from '@/app/system/growth/datasource/deal/action/mutation'
-import { Div, Span }   from '@/component/canggu/block'
-import { Card }        from '@/component/canggu/card'
-import { Small }       from '@/component/canggu/typography'
-import { DealCard }    from '@/app/system/growth/datasource/deal/component/kanban/card'
+import { updateStage }    from '@/app/system/growth/datasource/deal/action/mutation'
 import { DroppableStage } from '@/app/system/growth/datasource/deal/component/kanban/stage'
+import { Div, Span }      from '@/component/canggu/block'
+import { Card }           from '@/component/canggu/card'
+import { Small }          from '@/component/canggu/typography'
 
 type KanbanProps = {
 	readonly data : readonly DealByStage[]
@@ -36,10 +35,10 @@ export function Kanban({ data }: KanbanProps) {
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 8,
+			activationConstraint : {
+				distance : 8,
 			},
-		})
+		}),
 	)
 
 	async function handleStageChange(dealId: string, newStage: string) {
@@ -88,22 +87,25 @@ export function Kanban({ data }: KanbanProps) {
 
 	const activeDeal = activeId
 		? (() => {
-				for (const stageData of data) {
-					const deal = stageData.deals.find(d => d.id === activeId)
-					if (deal) return deal as ColumnTable & { account : { id : string, name : string } | null }
-				}
+			for (const stageData of data) {
+				const deal = stageData.deals.find(d => d.id === activeId)
+
+				if (deal)
+					return deal
+
 				return null
-			})()
+			}
+		})()
 		: null
 
 	return (
-		<DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+		<DndContext sensors={sensors} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
 			<Div className={'flex h-full gap-3 overflow-x-auto p-4'}>
 				{data.map((stageData) => (
 					<DroppableStage
+						deals={stageData.deals}
 						key={stageData.stage}
 						stage={stageData.stage}
-						deals={stageData.deals}
 						total={stageData.total}
 						updating={updating}
 						onStageChange={handleStageChange}
@@ -113,7 +115,7 @@ export function Kanban({ data }: KanbanProps) {
 
 			<DragOverlay>
 				{activeDeal ? (
-					<Card className={'border border-neutral-200 bg-white p-4 shadow-lg opacity-95 dark:border-zinc-700 dark:bg-zinc-950'}>
+					<Card className={'border border-neutral-200 bg-white p-4 opacity-95 shadow-lg dark:border-zinc-700 dark:bg-zinc-950'}>
 						<Div className={'mb-3 flex items-start justify-between'}>
 							<Div className={'flex-1'}>
 								<Span className={'block text-sm leading-tight font-semibold text-neutral-900 dark:text-neutral-100'}>{activeDeal.name}</Span>
@@ -131,4 +133,3 @@ export function Kanban({ data }: KanbanProps) {
 		</DndContext>
 	)
 }
-
