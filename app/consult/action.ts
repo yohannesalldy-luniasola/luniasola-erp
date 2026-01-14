@@ -79,6 +79,20 @@ export async function submitConsult(data: ConsultFormData): Promise<{ success : 
 		if (leadError)
 			throw leadError
 
+		const directPurchaseData = {
+			name            : data.name.trim(),
+			gclid           : data.gclid && data.gclid.trim() !== '' ? data.gclid.trim() : null,
+			fbclid          : data.fbclid && data.fbclid.trim() !== '' ? data.fbclid.trim() : null,
+			status          : 'pending' as const,
+			purchase_amount : null,
+			purchase_pic    : null,
+		}
+
+		const { error: directPurchaseError } = await supabase.from('direct_purchase').insert(directPurchaseData)
+
+		if (directPurchaseError)
+			throw directPurchaseError
+
 		return { success : true }
 	} catch (error) {
 		let message = 'Form submission was unsuccessful'
